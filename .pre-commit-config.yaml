@@ -1,0 +1,58 @@
+# Install: pipx install pre-commit && pre-commit install
+# Run all:  pre-commit run --all-files
+# See docs/DEVELOPMENT.md
+
+default_language_version:
+  python: python3.11
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: 'pnpm-lock\.yaml'
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: ['--config', 'pyproject.toml']
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        args: ['--config', '.flake8']
+        exclude: 'migrations/versions/|node_modules/|\.venv/'
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        types_or: [javascript, jsx, ts, tsx, css, json, yaml, markdown]
+        exclude: 'pnpm-lock\.yaml|poetry\.lock|pr-work/|coverage/|reports/'
+
+  # Project-local tools (use the monorepo's installed toolchains).
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (Python packages)
+        language: system
+        entry: bash scripts/run-mypy.sh
+        pass_filenames: false
+        types: [python]
+      - id: eslint
+        name: eslint
+        language: system
+        entry: pnpm exec eslint --max-warnings=0
+        types_or: [javascript, jsx, ts, tsx]
+        pass_filenames: true

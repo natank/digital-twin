@@ -59,7 +59,7 @@ describe('Input', () => {
       <>
         <Input label="First" />
         <Input label="Second" />
-      </>
+      </>,
     );
 
     const first = screen.getByLabelText('First').getAttribute('id');

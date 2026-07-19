@@ -1,0 +1,21 @@
+[flake8]
+max-line-length = 100
+extend-ignore = E203, W503
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    .tox,
+    venv,
+    .venv,
+    .pytest_cache,
+    .nx,
+    node_modules,
+    coverage,
+    reports,
+    migrations/versions
+per-file-ignores =
+    # Package re-export barrels intentionally import many symbols.
+    libs/backend-shared/backend_shared/__init__.py:F401
+    apps/backend/migrations/env.py:E402

@@ -6,7 +6,9 @@
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 120ms ease, opacity 120ms ease;
+  transition:
+    background-color 120ms ease,
+    opacity 120ms ease;
 }
 
 .button:disabled {

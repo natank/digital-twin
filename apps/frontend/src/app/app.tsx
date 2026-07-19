@@ -1,15 +1,15 @@
 // Uncomment this line to use CSS modules
 // import styles from './app.module.css';
-import NxWelcome from "./nx-welcome";
+import type { JSX } from 'react';
 
-export function App() {
+import NxWelcome from './nx-welcome';
+
+export function App(): JSX.Element {
   return (
     <div>
-      <NxWelcome title="frontend"/>
+      <NxWelcome title="frontend" />
     </div>
   );
 }
 
 export default App;
-
-

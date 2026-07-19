@@ -7,7 +7,10 @@ import * as path from 'path';
 export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/libs/frontend-shared',
-  plugins: [react(), dts({ entryRoot: 'src', tsconfigPath: path.join(import.meta.dirname, 'tsconfig.lib.json') })],
+  plugins: [
+    react(),
+    dts({ entryRoot: 'src', tsconfigPath: path.join(import.meta.dirname, 'tsconfig.lib.json') }),
+  ],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [],
@@ -28,11 +31,11 @@ export default defineConfig(() => ({
       fileName: 'index',
       // Change this to the formats you want to support.
       // Don't forget to update your package.json as well.
-      formats: ['es' as const]
+      formats: ['es' as const],
     },
     rolldownOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react','react-dom','react/jsx-runtime']
+      external: ['react', 'react-dom', 'react/jsx-runtime'],
     },
   },
   test: {
@@ -45,6 +48,6 @@ export default defineConfig(() => ({
     coverage: {
       reportsDirectory: './test-output/vitest/coverage',
       provider: 'v8' as const,
-    }
+    },
   },
 }));

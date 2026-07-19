@@ -1,23 +1,18 @@
-import {
-  isNonEmpty,
-  isStrongPassword,
-  isValidEmail,
-  validatePasswordStrength,
-} from './validators';
+import { isNonEmpty, isStrongPassword, isValidEmail, validatePasswordStrength } from './validators';
 
 describe('isValidEmail', () => {
   it.each(['user@example.com', 'first.last@sub.example.co.uk', 'a+tag@example.io'])(
     'accepts %s',
     (email) => {
       expect(isValidEmail(email)).toBe(true);
-    }
+    },
   );
 
   it.each(['', 'no-at-sign', '@example.com', 'user@', 'user@nodot', 'a b@example.com'])(
     'rejects %s',
     (email) => {
       expect(isValidEmail(email)).toBe(false);
-    }
+    },
   );
 
   it('rejects addresses over the length limit', () => {

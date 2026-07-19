@@ -10,11 +10,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PYTHON_VERSION: "3.11"
-  NODE_VERSION: "20"
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
   # Silence Poetry's keyring prompts in CI
-  POETRY_VIRTUALENVS_IN_PROJECT: "true"
-  POETRY_NO_INTERACTION: "1"
+  POETRY_VIRTUALENVS_IN_PROJECT: 'true'
+  POETRY_NO_INTERACTION: '1'
 
 jobs:
   quality:
@@ -52,18 +52,20 @@ jobs:
           pnpm nx run apps/backend:install
           pnpm nx run libs/backend-shared:install
 
-      - name: Lint (flake8 via Nx — Python projects)
+      - name: Lint Python (flake8 via Nx)
         run: pnpm nx run-many --target=lint --all --parallel=2
 
-      - name: Typecheck (TypeScript projects)
+      - name: Lint TypeScript (ESLint)
+        run: pnpm exec eslint apps/frontend libs/frontend-shared --max-warnings=0
+
+      - name: Format check (Black + Prettier)
+        run: pnpm format:check
+
+      - name: Typecheck TypeScript (Nx)
         run: pnpm nx run-many --target=typecheck --all --parallel=2
 
-      # ESLint / Prettier / Black / MyPy land in Phase 0 PR-006.
-      # Placeholders keep the job graph stable when those configs arrive.
-      - name: Frontend format/lint (placeholder until PR-006)
-        run: |
-          echo "ESLint and Prettier are not configured yet (Phase 0 PR-006)."
-          echo "Typecheck above is the current frontend static-analysis gate."
+      - name: Typecheck Python (MyPy)
+        run: ./scripts/run-mypy.sh
 
   test:
     name: test

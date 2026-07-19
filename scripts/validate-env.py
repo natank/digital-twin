@@ -117,7 +117,14 @@ def load_env(env_file: Path | None) -> tuple[dict[str, str], Path | None]:
     if env_file is not None and env_file.is_file():
         file_values = parse_env_file(env_file)
         used_file = env_file
-    merged = {**file_values, **{k: v for k, v in os.environ.items() if k in REQUIRED_VARS + OPTIONAL_VARS or k in file_values}}
+    merged = {
+        **file_values,
+        **{
+            k: v
+            for k, v in os.environ.items()
+            if k in REQUIRED_VARS + OPTIONAL_VARS or k in file_values
+        },
+    }
     # Prefer process env for every key that is set there.
     for key in list(file_values) + list(REQUIRED_VARS) + list(OPTIONAL_VARS):
         if key in os.environ:
@@ -142,7 +149,9 @@ def validate_required(env: dict[str, str], result: CheckResult) -> None:
             result.pass_(f"{key} is set")
 
 
-def validate_optional_presence(env: dict[str, str], result: CheckResult, env_file: Path | None) -> None:
+def validate_optional_presence(
+    env: dict[str, str], result: CheckResult, env_file: Path | None
+) -> None:
     """Warn when known optional keys are absent from the env file (not process)."""
     if env_file is None:
         return
@@ -310,14 +319,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     result = CheckResult()
-    env_file: Path | None = args.env_file
+    env_path: Path = args.env_file
+    env_file: Path | None = env_path
 
-    if not env_file.is_file():
+    if not env_path.is_file():
         if args.allow_missing_file:
-            result.warn(f"Env file not found: {env_file}")
+            result.warn(f"Env file not found: {env_path}")
             env_file = None
         else:
-            result.fail(f"Env file not found: {env_file}")
+            result.fail(f"Env file not found: {env_path}")
             if EXAMPLE_ENV_FILE.is_file():
                 result.warn(f"Create one with: cp {EXAMPLE_ENV_FILE} {args.env_file}")
             print_report(result, None)

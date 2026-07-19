@@ -24,9 +24,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    database_url: str = (
-        "postgresql+psycopg://postgres:devpassword@localhost:5432/digital_twin_dev"
-    )
+    database_url: str = "postgresql+psycopg://postgres:devpassword@localhost:5432/digital_twin_dev"
     redis_url: str = "redis://localhost:6379"
     jwt_secret: str = "dev-secret-only-for-testing"
     jwt_expiry: int = 86400

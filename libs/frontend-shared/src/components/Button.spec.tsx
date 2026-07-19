@@ -23,7 +23,7 @@ describe('Button', () => {
     render(
       <Button onClick={onClick} disabled>
         Save
-      </Button>
+      </Button>,
     );
 
     await userEvent.click(screen.getByRole('button'));
@@ -44,7 +44,7 @@ describe('Button', () => {
     render(
       <Button onClick={onClick} isLoading>
         Save
-      </Button>
+      </Button>,
     );
 
     await userEvent.click(screen.getByRole('button'));
@@ -56,7 +56,7 @@ describe('Button', () => {
     render(
       <Button type="submit" data-testid="submit-btn">
         Go
-      </Button>
+      </Button>,
     );
 
     const button = screen.getByTestId('submit-btn');

@@ -8,6 +8,7 @@ A 24/7 AI-powered digital twin that represents professionals on their websites, 
 ## Overview
 
 Digital Twin enables professionals to create an always-available AI assistant that:
+
 - Engages website visitors with intelligent conversations
 - Represents career, background, skills, and experience
 - Generates qualified leads through professional engagement
@@ -23,15 +24,15 @@ Digital Twin enables professionals to create an always-available AI assistant th
 
 ## Prerequisites
 
-| Tool | Version | Notes |
-|------|---------|--------|
-| Node.js | 20+ | via nvm or system install |
-| pnpm | 9+ | `corepack enable && corepack prepare pnpm@latest --activate` |
-| Python | 3.11+ | Poetry pins per-project via `.python-version` |
-| Poetry | 2.x | `pipx install poetry` |
-| poetry-plugin-export | latest | `pipx inject poetry poetry-plugin-export` (required by Nx Python build) |
-| Docker or Podman | recent | Compose-compatible CLI (`docker compose` or shims) |
-| `gh` CLI | optional | GitHub PRs from the command line |
+| Tool                 | Version  | Notes                                                                   |
+| -------------------- | -------- | ----------------------------------------------------------------------- |
+| Node.js              | 20+      | via nvm or system install                                               |
+| pnpm                 | 9+       | `corepack enable && corepack prepare pnpm@latest --activate`            |
+| Python               | 3.11+    | Poetry pins per-project via `.python-version`                           |
+| Poetry               | 2.x      | `pipx install poetry`                                                   |
+| poetry-plugin-export | latest   | `pipx inject poetry poetry-plugin-export` (required by Nx Python build) |
+| Docker or Podman     | recent   | Compose-compatible CLI (`docker compose` or shims)                      |
+| `gh` CLI             | optional | GitHub PRs from the command line                                        |
 
 ## Quick Start
 
@@ -66,14 +67,14 @@ python3 scripts/validate-env.py --check-services   # after stack is up
 
 ## Development scripts
 
-| Script | Purpose |
-|--------|---------|
-| `./scripts/start-dev.sh` | Create env (if needed), validate, `compose up`, wait healthy, migrate |
-| `./scripts/start-dev.sh --seed` | Same as above, then seed sample data |
-| `./scripts/db-migrate.sh` | Alembic upgrade head (also: `down`, `history`, `current`) |
-| `./scripts/db-seed.sh` | Idempotent sample owner + profile |
-| `./scripts/db-reset.sh` | Destroy local Postgres volume, remigrate, reseed |
-| `python3 scripts/validate-env.py` | Validate required env vars and formats |
+| Script                            | Purpose                                                               |
+| --------------------------------- | --------------------------------------------------------------------- |
+| `./scripts/start-dev.sh`          | Create env (if needed), validate, `compose up`, wait healthy, migrate |
+| `./scripts/start-dev.sh --seed`   | Same as above, then seed sample data                                  |
+| `./scripts/db-migrate.sh`         | Alembic upgrade head (also: `down`, `history`, `current`)             |
+| `./scripts/db-seed.sh`            | Idempotent sample owner + profile                                     |
+| `./scripts/db-reset.sh`           | Destroy local Postgres volume, remigrate, reseed                      |
+| `python3 scripts/validate-env.py` | Validate required env vars and formats                                |
 
 npm/pnpm aliases (from package.json):
 
@@ -118,11 +119,13 @@ digital-twin/
 
 ## Documentation
 
+- [Development Guide](./docs/DEVELOPMENT.md) — Setup, tooling, testing, debugging
+- [Contributing](./docs/CONTRIBUTING.md) — PR process, commits, reviews
 - [Operational Concept](./docs/OPERATIONAL_CONCEPT.md) — System overview and actors
 - [Product Requirements](./docs/PRD.md) — Features and epics
 - [Technical Design](./docs/TECHNICAL_DESIGN.md) — Architecture and implementation
 - [Implementation Plan](./docs/IMPLEMENTATION_MASTER_PLAN.md) — Development roadmap
-- [Phase 0 PR Breakdown](./docs/phase-0/PR_BREAKDOWN.md) — Current foundation work
+- [Phase 0 PR Breakdown](./docs/phase-0/PR_BREAKDOWN.md) — Foundation PR status
 
 ## IDE setup
 
@@ -137,12 +140,21 @@ EditorConfig (`.editorconfig`) provides the same baseline for other editors.
 
 ## Development guidelines
 
-- **Code style:** Black (Python, 100 cols), Prettier (TypeScript) — full lint config in Phase 0 PR-006
-- **Type checking:** MyPy (Python), TypeScript (Frontend)
+- **Code style:** Black (Python, 100 cols), Prettier (TypeScript/JSON/YAML/MD)
+- **Linting:** Flake8 (Python), ESLint (TypeScript)
+- **Type checking:** MyPy (Python), TypeScript (`tsc` / Nx typecheck)
+- **Hooks:** `pre-commit install` (optional; see [DEVELOPMENT.md](./docs/DEVELOPMENT.md))
 - **Testing:** pytest (backend), Vitest (frontend) — target ≥80% unit coverage
 - **Commits:** Conventional commits, e.g. `chore(phase-0): …`, `feat(auth): …`
 - **Git:** Feature branches, squash-merge via PR
 - **Secrets:** Never commit `.env.local` or real API keys; placeholders only in `.env.example`
+
+```bash
+pnpm format          # write
+pnpm format:check    # CI mode
+pnpm lint
+pnpm typecheck
+```
 
 ### Branch naming (Phase 0)
 
@@ -178,11 +190,11 @@ pnpm nx graph
 
 GitHub Actions workflows live under `.github/workflows/`:
 
-| Workflow | File | When | Purpose |
-|----------|------|------|---------|
-| **CI** | `ci.yml` | PR + push to `main` | Lint, typecheck, unit tests, Nx build |
-| **Build** | `build.yml` | PR + push to `main` | Docker image builds (backend + frontend) |
-| **Deploy** | `deploy.yml` | Manual (`workflow_dispatch`) | Staging/production scaffold (Phase 4) |
+| Workflow   | File         | When                         | Purpose                                  |
+| ---------- | ------------ | ---------------------------- | ---------------------------------------- |
+| **CI**     | `ci.yml`     | PR + push to `main`          | Lint, typecheck, unit tests, Nx build    |
+| **Build**  | `build.yml`  | PR + push to `main`          | Docker image builds (backend + frontend) |
+| **Deploy** | `deploy.yml` | Manual (`workflow_dispatch`) | Staging/production scaffold (Phase 4)    |
 
 ```bash
 # Local parity with CI quality gates
@@ -200,6 +212,7 @@ Status checks expected on `main` (branch protection): `quality`, `test`, `build`
 See [Technical Design](./docs/TECHNICAL_DESIGN.md) for detailed diagrams.
 
 **High-level flow:**
+
 ```
 Owner uploads CV → Profile summary generated → Digital twin ready
                                                         ↓
@@ -229,13 +242,13 @@ See [Implementation Master Plan — PR guidelines](./docs/IMPLEMENTATION_MASTER_
 
 ## Roadmap
 
-| Phase | Focus | Status |
-|-------|--------|--------|
+| Phase | Focus                                                  | Status      |
+| ----- | ------------------------------------------------------ | ----------- |
 | **0** | Foundation (Nx, DB, dev env, CI, shared libs, tooling) | In progress |
-| **1** | Core services (Auth → Profile → Chat) | Planned |
-| **2** | Supporting services (Notifications, Config) | Planned |
-| **3** | Frontend (public pages, dashboard, chat UI) | Planned |
-| **4** | Integration, hardening, alpha launch | Planned |
+| **1** | Core services (Auth → Profile → Chat)                  | Planned     |
+| **2** | Supporting services (Notifications, Config)            | Planned     |
+| **3** | Frontend (public pages, dashboard, chat UI)            | Planned     |
+| **4** | Integration, hardening, alpha launch                   | Planned     |
 
 ## Support
 

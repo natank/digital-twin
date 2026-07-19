@@ -1,0 +1,45 @@
+# Dependencies & caches
+node_modules
+.pnpm-store
+.nx
+.venv
+venv
+dist
+build
+coverage
+reports
+out-tsc
+**/test-output
+**/.mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+**/.cache
+
+# Generated / lockfiles
+pnpm-lock.yaml
+poetry.lock
+package-lock.json
+*.min.js
+*.min.css
+
+# Python / backend artifacts
+**/__pycache__
+**/*.py
+migrations/versions
+
+# Docs build noise / local agent state
+pr-work
+pr-archive
+.claude
+
+# Large specification docs are hand-maintained; format only
+# DEVELOPMENT.md / CONTRIBUTING.md via explicit editor saves.
+docs/PRD.md
+docs/TECHNICAL_DESIGN.md
+docs/IMPLEMENTATION_MASTER_PLAN.md
+docs/OPERATIONAL_CONCEPT.md
+docs/PROJECT.md
+docs/phase-0/**
+
+# Docker / compose often hand-formatted for readability
+# (prettier still formats JSON/YAML under apps and configs)
