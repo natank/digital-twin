@@ -84,8 +84,7 @@ def test_extract_text_dispatch_docx() -> None:
 
 
 def test_extract_empty_raises() -> None:
-    data = _docx_bytes("")
-    # Empty paragraphs only → no text
+    # Empty paragraphs only → no extractable text
     doc = Document()
     buf = io.BytesIO()
     doc.save(buf)

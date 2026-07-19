@@ -208,7 +208,12 @@ def upload_cv(
     )
 
 
-def delete_object(key: str, *, client: BaseClient | None = None, settings: Settings | None = None) -> None:
+def delete_object(
+    key: str,
+    *,
+    client: BaseClient | None = None,
+    settings: Settings | None = None,
+) -> None:
     """Best-effort delete of a previous CV object."""
     cfg = settings or get_settings()
     s3 = client or get_s3_client()
@@ -229,7 +234,8 @@ def download_bytes(
     s3 = client or get_s3_client()
     try:
         obj = s3.get_object(Bucket=cfg.s3_bucket, Key=key)
-        return obj["Body"].read()
+        body = obj["Body"].read()
+        return bytes(body)
     except ClientError as exc:
         code = exc.response.get("Error", {}).get("Code", "")
         if code in {"NoSuchKey", "404", "NotFound"}:
@@ -250,11 +256,12 @@ def presigned_get_url(
     cfg = settings or get_settings()
     s3 = client or get_s3_client()
     try:
-        return s3.generate_presigned_url(
+        url = s3.generate_presigned_url(
             "get_object",
             Params={"Bucket": cfg.s3_bucket, "Key": key},
             ExpiresIn=expires_in,
         )
+        return str(url)
     except (BotoCoreError, ClientError) as exc:
         raise ExternalServiceError("Failed to generate download URL") from exc
 

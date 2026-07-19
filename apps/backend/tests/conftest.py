@@ -13,12 +13,12 @@ from sqlalchemy.pool import StaticPool
 # Run Celery tasks in-process for the whole suite (no Redis broker required).
 os.environ.setdefault("CELERY_TASK_ALWAYS_EAGER", "true")
 
-from src.db.base import Base
-from src.db.session import get_db
-from src.main import app
+from src.db.base import Base  # noqa: E402
+from src.db.session import get_db  # noqa: E402
+from src.main import app  # noqa: E402
 
 # Import models so metadata is populated.
-from src.db import models as _models  # noqa: F401
+from src.db import models as _models  # noqa: E402, F401
 
 # Ensure Celery app picks up eager mode after env is set, and tasks are imported.
 from src.worker.celery_app import celery_app as _celery_app  # noqa: E402

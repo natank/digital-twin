@@ -46,8 +46,8 @@ Buffer (end of Week 8 / start of Phase 2 planning):
 
 ## PR Breakdown Summary
 
-| PR #    | Title                                | Epic | Week | Est. lines | Priority | Status      |
-| ------- | ------------------------------------ | ---- | ---- | ---------- | -------- | ----------- |
+| PR #    | Title                                | Epic | Week | Est. lines | Priority | Status                                                            |
+| ------- | ------------------------------------ | ---- | ---- | ---------- | -------- | ----------------------------------------------------------------- |
 | **001** | API foundation                       | —    | 3    | 250–400    | P0       | ✅ Merged ([#10](https://github.com/natank/digital-twin/pull/10)) |
 | **002** | Auth: register / login / me          | E1   | 3    | 400–600    | P0       | ✅ Merged ([#11](https://github.com/natank/digital-twin/pull/11)) |
 | **003** | Auth: session lifecycle + rate limit | E1   | 3–4  | 250–400    | P0       | ✅ Merged ([#12](https://github.com/natank/digital-twin/pull/12)) |
@@ -58,10 +58,10 @@ Buffer (end of Week 8 / start of Phase 2 planning):
 | **008** | CV upload + object storage           | E2   | 5    | 350–500    | P0       | ✅ Merged ([#17](https://github.com/natank/digital-twin/pull/17)) |
 | **009** | CV extraction + job pipeline         | E2   | 5–6  | 400–600    | P0       | ✅ Merged ([#18](https://github.com/natank/digital-twin/pull/18)) |
 | **010** | LLM profile summary                  | E2   | 6    | 400–600    | P0       | ✅ Merged ([#19](https://github.com/natank/digital-twin/pull/19)) |
-| **011** | Chat models + sessions               | E3   | 7    | 350–500    | P0       | Not started |
-| **012** | Chat messages + LLM replies          | E3   | 7–8  | 450–700    | P0       | Not started |
-| **013** | Chat streaming + boundaries          | E3   | 8    | 350–550    | P1       | Not started |
-| **014** | Integration tests & API polish       | —    | 8    | 300–500    | P1       | Not started |
+| **011** | Chat models + sessions               | E3   | 7    | 350–500    | P0       | Not started                                                       |
+| **012** | Chat messages + LLM replies          | E3   | 7–8  | 450–700    | P0       | Not started                                                       |
+| **013** | Chat streaming + boundaries          | E3   | 8    | 350–550    | P1       | Not started                                                       |
+| **014** | Integration tests & API polish       | —    | 8    | 300–500    | P1       | Not started                                                       |
 
 **Total scope (estimate):** ~4,500–7,000 lines across 14 PRs (application code + migrations + tests; lockfile churn excluded).
 
