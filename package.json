@@ -4,7 +4,13 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "graph": "nx graph"
+    "graph": "nx graph",
+    "dev": "./scripts/start-dev.sh",
+    "dev:seed": "./scripts/start-dev.sh --seed",
+    "db:migrate": "./scripts/db-migrate.sh",
+    "db:seed": "./scripts/db-seed.sh",
+    "db:reset": "./scripts/db-reset.sh",
+    "validate-env": "python3 scripts/validate-env.py"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",
@@ -36,5 +42,6 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
-  }
+  },
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8"
 }
