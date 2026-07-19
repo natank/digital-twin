@@ -66,5 +66,15 @@
   },
 
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  "mypy-type-checker.args": ["--config-file=${workspaceFolder}/mypy.ini"],
+  "flake8.args": ["--config=${workspaceFolder}/.flake8"],
+  "black-formatter.args": ["--config", "${workspaceFolder}/pyproject.toml"]
 }

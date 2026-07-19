@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes } from 'react';
+import { useId, type InputHTMLAttributes, type JSX } from 'react';
 
 import styles from './Input.module.css';
 
@@ -17,7 +17,7 @@ export function Input({
   className,
   required,
   ...rest
-}: InputProps) {
+}: InputProps): JSX.Element {
   // Generated so multiple Inputs on one page never collide, and so the
   // label/description associations stay correct without caller effort.
   const inputId = useId();

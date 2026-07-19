@@ -58,5 +58,13 @@ node_modules/
 coverage/
 reports/
 
+# Type-checker / formatter caches
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache/
+.pytest_cache/
+**/.pytest_cache/
+
 # TypeScript build output
 out-tsc/

@@ -9,9 +9,7 @@ def test_package_importable():
 
 def test_public_api_is_exported():
     """Everything in __all__ must actually be importable from the package."""
-    missing = [
-        name for name in backend_shared.__all__ if not hasattr(backend_shared, name)
-    ]
+    missing = [name for name in backend_shared.__all__ if not hasattr(backend_shared, name)]
     assert missing == [], f"__all__ names not exported: {missing}"
 
 

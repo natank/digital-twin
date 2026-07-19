@@ -1,11 +1,14 @@
 [flake8]
+max-line-length = 100
+extend-ignore = E203, W503
 exclude =
-	.git,
-	__pycache__,
-	build,
-	dist,
-	.tox,
-	venv,
-	.venv,
-	.pytest_cache
-max-line-length = 120
+    .git,
+    __pycache__,
+    build,
+    dist,
+    .tox,
+    venv,
+    .venv,
+    .pytest_cache
+per-file-ignores =
+    backend_shared/__init__.py:F401

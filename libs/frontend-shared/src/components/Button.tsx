@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, JSX, ReactNode } from 'react';
 
 import styles from './Button.module.css';
 
@@ -21,7 +21,7 @@ export function Button({
   children,
   className,
   ...rest
-}: ButtonProps) {
+}: ButtonProps): JSX.Element {
   const classes = [styles['button'], styles[variant], styles[size], className]
     .filter(Boolean)
     .join(' ');

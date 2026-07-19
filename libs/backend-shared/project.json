@@ -28,9 +28,7 @@
     },
     "build": {
       "executor": "@nxlv/python:build",
-      "outputs": [
-        "{projectRoot}/dist"
-      ],
+      "outputs": ["{projectRoot}/dist"],
       "options": {
         "outputPath": "{projectRoot}/dist",
         "publish": false,
@@ -41,9 +39,7 @@
     },
     "lint": {
       "executor": "@nxlv/python:flake8",
-      "outputs": [
-        "{workspaceRoot}/reports/{projectRoot}/pylint.txt"
-      ],
+      "outputs": ["{workspaceRoot}/reports/{projectRoot}/pylint.txt"],
       "options": {
         "outputFile": "reports/{projectRoot}/pylint.txt"
       },
