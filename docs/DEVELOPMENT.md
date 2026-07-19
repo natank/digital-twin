@@ -305,3 +305,4 @@ pnpm nx run libs/backend-shared:install
 - [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md)
 - [IMPLEMENTATION_MASTER_PLAN.md](./IMPLEMENTATION_MASTER_PLAN.md)
 - [phase-0/PR_BREAKDOWN.md](./phase-0/PR_BREAKDOWN.md)
+- [phase-1/PR_BREAKDOWN.md](./phase-1/PR_BREAKDOWN.md)

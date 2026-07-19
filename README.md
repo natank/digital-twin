@@ -125,7 +125,8 @@ digital-twin/
 - [Product Requirements](./docs/PRD.md) — Features and epics
 - [Technical Design](./docs/TECHNICAL_DESIGN.md) — Architecture and implementation
 - [Implementation Plan](./docs/IMPLEMENTATION_MASTER_PLAN.md) — Development roadmap
-- [Phase 0 PR Breakdown](./docs/phase-0/PR_BREAKDOWN.md) — Foundation PR status
+- [Phase 0 PR Breakdown](./docs/phase-0/PR_BREAKDOWN.md) — Foundation (complete)
+- [Phase 1 PR Breakdown](./docs/phase-1/PR_BREAKDOWN.md) — Core services (Auth → Profile → Chat)
 
 ## IDE setup
 
