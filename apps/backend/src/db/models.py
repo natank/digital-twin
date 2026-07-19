@@ -85,3 +85,22 @@ class Profile(Base):
     )
 
     owner: Mapped["Owner"] = relationship(back_populates="profile")
+
+
+class OwnerToken(Base):
+    """One-time tokens for email verification and password reset."""
+
+    __tablename__ = "owner_tokens"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("owners.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # "email_verify" | "password_reset"
+    token_type: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(128), unique=True, nullable=False, index=True)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+
+    owner: Mapped["Owner"] = relationship()
