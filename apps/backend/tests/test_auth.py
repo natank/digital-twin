@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import uuid
+
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from src.auth.security import create_access_token, hash_password, verify_password
 from src.db.models import Owner
-from sqlalchemy.orm import Session
-import uuid
 
 
 STRONG_PASSWORD = "SecurePass1!"
@@ -119,3 +121,101 @@ def test_create_access_token_roundtrip(db_session: Session) -> None:
     token, expires = create_access_token(owner_id=owner.id, session_id=session_id)
     assert isinstance(token, str)
     assert expires is not None
+
+
+def test_logout_invalidates_session(client: TestClient) -> None:
+    client.post(
+        "/auth/register",
+        json={
+            "email": "logout@example.com",
+            "password": STRONG_PASSWORD,
+            "first_name": "L",
+            "last_name": "O",
+        },
+    )
+    login = client.post(
+        "/auth/login",
+        json={"email": "logout@example.com", "password": STRONG_PASSWORD},
+    )
+    token = login.json()["data"]["access_token"]
+    assert client.get("/auth/me", headers={"Authorization": f"Bearer {token}"}).status_code == 200
+
+    out = client.post("/auth/logout", headers={"Authorization": f"Bearer {token}"})
+    assert out.status_code == 200
+    assert client.get("/auth/me", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+
+
+def test_refresh_token_rotates(client: TestClient) -> None:
+    client.post(
+        "/auth/register",
+        json={
+            "email": "refresh@example.com",
+            "password": STRONG_PASSWORD,
+            "first_name": "R",
+            "last_name": "F",
+        },
+    )
+    login = client.post(
+        "/auth/login",
+        json={"email": "refresh@example.com", "password": STRONG_PASSWORD},
+    )
+    old_token = login.json()["data"]["access_token"]
+    refreshed = client.post(
+        "/auth/refresh-token",
+        headers={"Authorization": f"Bearer {old_token}"},
+    )
+    assert refreshed.status_code == 200, refreshed.text
+    new_token = refreshed.json()["data"]["access_token"]
+    assert new_token != old_token
+    # Old token no longer matches stored hash.
+    assert (
+        client.get("/auth/me", headers={"Authorization": f"Bearer {old_token}"}).status_code == 401
+    )
+    assert (
+        client.get("/auth/me", headers={"Authorization": f"Bearer {new_token}"}).status_code == 200
+    )
+
+
+def test_login_rate_limit(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    import threading
+
+    from src.auth import rate_limit as rl
+    from src.settings import Settings
+
+    # Deterministic in-memory limiter (ignore Redis leftover keys).
+    settings = Settings(
+        auth_login_max_attempts=3,
+        auth_login_lockout_seconds=900,
+    )
+    limiter = rl.LoginRateLimiter.__new__(rl.LoginRateLimiter)
+    limiter._settings = settings  # type: ignore[attr-defined]
+    limiter._memory = {}  # type: ignore[attr-defined]
+    limiter._lock = threading.Lock()  # type: ignore[attr-defined]
+    limiter._redis = None  # type: ignore[attr-defined]
+    rl._limiter = limiter  # type: ignore[attr-defined]
+
+    email = f"limited-{uuid.uuid4().hex[:8]}@example.com"
+    client.post(
+        "/auth/register",
+        json={
+            "email": email,
+            "password": STRONG_PASSWORD,
+            "first_name": "X",
+            "last_name": "Y",
+        },
+    )
+    for _ in range(3):
+        resp = client.post(
+            "/auth/login",
+            json={"email": email, "password": "WrongPass1!"},
+        )
+        assert resp.status_code == 401, resp.text
+
+    blocked = client.post(
+        "/auth/login",
+        json={"email": email, "password": "WrongPass1!"},
+    )
+    assert blocked.status_code == 429
+    assert blocked.json()["error"]["code"] == "RATE_LIMIT_001"
+
+    rl._limiter = None  # type: ignore[attr-defined]

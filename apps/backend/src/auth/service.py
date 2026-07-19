@@ -113,15 +113,16 @@ def create_owner_session(
     return token, expires_at, row
 
 
-def get_owner_for_token(
+def resolve_session_for_token(
     db: Session,
     token: str,
     *,
     settings: Settings | None = None,
-) -> Owner:
-    """Resolve a Bearer token to an active owner with a valid session."""
-    from src.auth.security import decode_access_token
+) -> tuple[Owner, OwnerSession]:
+    """Resolve a Bearer token to (owner, session)."""
     import jwt
+
+    from src.auth.security import decode_access_token
 
     cfg = settings or get_settings()
     try:
@@ -159,4 +160,43 @@ def get_owner_for_token(
     owner = db.query(Owner).filter(Owner.id == owner_id).first()
     if owner is None or not owner.is_active:
         raise AuthenticationError("Account is inactive or missing")
+    return owner, session
+
+
+def get_owner_for_token(
+    db: Session,
+    token: str,
+    *,
+    settings: Settings | None = None,
+) -> Owner:
+    """Resolve a Bearer token to an active owner with a valid session."""
+    owner, _session = resolve_session_for_token(db, token, settings=settings)
     return owner
+
+
+def revoke_session(db: Session, session: OwnerSession) -> None:
+    """Delete a session row (logout)."""
+    db.delete(session)
+    db.commit()
+
+
+def refresh_owner_session(
+    db: Session,
+    token: str,
+    *,
+    settings: Settings | None = None,
+) -> tuple[str, datetime, Owner]:
+    """Rotate the access token for a valid session (same session id)."""
+    cfg = settings or get_settings()
+    owner, session = resolve_session_for_token(db, token, settings=cfg)
+    new_token, expires_at = create_access_token(
+        owner_id=owner.id,
+        session_id=session.id,
+        settings=cfg,
+    )
+    session.token = hash_token(new_token)
+    session.expires_at = expires_at.replace(tzinfo=None) if expires_at.tzinfo else expires_at
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+    return new_token, expires_at, owner
