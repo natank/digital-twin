@@ -35,7 +35,7 @@ Week 2:
 | **001** | Nx Monorepo Initialization | Build system setup | 200-400 (actual: ~11,800, mostly lockfiles) | 2 | P0 Critical | ✅ Merged ([#3](https://github.com/natank/digital-twin/pull/3)) |
 | **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 (actual: ~1,115) | 2 | P0 Critical | ✅ Merged ([#4](https://github.com/natank/digital-twin/pull/4)) |
 | **003** | Development Environment | Config, env variables | 150-250 (actual: ~1,280) | 1-2 | P1 High | ✅ Merged ([#5](https://github.com/natank/digital-twin/pull/5)) |
-| **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 | 2 | P0 Critical | Not started |
+| **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 (actual: ~500) | 2 | P0 Critical | ✅ Merged ([#6](https://github.com/natank/digital-twin/pull/6)) |
 | **005** | Shared Libraries | Backend/frontend shared code | 200-400 | 2 | P1 High | Not started |
 | **006** | Development Tooling | Scripts, linting, docs | 300-500 | 1-2 | P2 Medium | Not started |
 
@@ -85,6 +85,22 @@ Week 2:
 - Full lint/format tool configs (flake8, black, mypy, eslint, prettier,
   pre-commit) remain PR-006 scope
 - Full rationale in `pr-work/PHASE0-003-development-environment/PR_DESCRIPTION.md` (local, gitignored)
+
+### PR-004 Notes (as merged)
+- CI jobs: `quality` (flake8 via Nx + TS typecheck), `test` (Nx tests +
+  validate-env unit tests + coverage artifacts/Codecov soft-upload),
+  `build` (Nx build all projects)
+- Build workflow validates Docker images with Buildx (no registry push yet);
+  deploy workflow is a manual no-op scaffold for Phase 4
+- Frontend tests are Vitest (not Jest) — matches PR-001 scaffold
+- Black / MyPy / ESLint / Prettier are not CI-gated yet (PR-006 owns full
+  lint config); placeholder step documents the gap
+- Uses `nx run-many --all` rather than `nx affected` for Phase 0 reliability
+- Production Dockerfiles added: `apps/backend/Dockerfile` (Poetry/FastAPI),
+  `apps/frontend/Dockerfile` (pnpm/Nx → nginx SPA) + `.dockerignore`
+- PR template + CODEOWNERS + README status badges included
+- Branch protection on `main` applied post-merge (required checks + 1 review)
+- Full rationale in `pr-work/PHASE0-004-ci-cd-pipeline/PR_DESCRIPTION.md` (local, gitignored)
 
 ---
 
