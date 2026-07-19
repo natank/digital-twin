@@ -36,6 +36,9 @@ readme = 'README.md'
   redis = "^5.2.0"
   pydantic-settings = "^2.6.1"
   digital-twin-backend-shared = {path = "../../libs/backend-shared", develop = true}
+  bcrypt = ">=4.0"
+  pyjwt = ">=2.8"
+  email-validator = ">=2.0"
 
   [tool.poetry.group.dev.dependencies]
   autopep8 = "2.3.1"

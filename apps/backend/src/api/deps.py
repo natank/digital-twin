@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from backend_shared.exceptions import AuthenticationError
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
 
+from src.db.models import Owner
 from src.db.session import get_db
-
-if TYPE_CHECKING:
-    from src.db.models import Owner
 
 # Re-export so routers import dependencies from one place.
 __all__ = ["get_db", "get_current_owner"]
@@ -21,15 +18,12 @@ _bearer = HTTPBearer(auto_error=False)
 
 def get_current_owner(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
-) -> "Owner":
-    """Resolve the authenticated owner from a Bearer token.
+    db: Session = Depends(get_db),
+) -> Owner:
+    """Resolve the authenticated owner from a Bearer JWT + DB session row."""
+    if credentials is None or not credentials.credentials:
+        raise AuthenticationError("Not authenticated")
 
-    PR-001 ships a stub that always rejects (no DB required). PR-002 replaces
-    this implementation with JWT + session validation and will add a ``db``
-    dependency while keeping the public name stable for route signatures.
-    """
-    _ = credentials  # present so OpenAPI shows the Bearer scheme
-    raise AuthenticationError(
-        "Authentication is not configured yet",
-        error_code="AUTH_001",
-    )
+    from src.auth.service import get_owner_for_token
+
+    return get_owner_for_token(db, credentials.credentials)

@@ -30,7 +30,8 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
 
     # Auth / JWT
-    jwt_secret: str = "dev-secret-only-for-testing"
+    # >= 32 bytes recommended for HS256 (RFC 7518).
+    jwt_secret: str = "dev-secret-only-for-testing-min-32b"
     jwt_expiry: int = 86400
     jwt_algorithm: str = "HS256"
     auth_login_max_attempts: int = 5

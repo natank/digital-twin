@@ -1,12 +1,18 @@
 """Seed the local development database with a sample owner and profile.
 
 Usage: poetry run python scripts/seed_data.py
+
+Default credentials (dev only):
+  email:    owner@example.com
+  password: Owner123!
 """
 
+from src.auth.security import hash_password
 from src.db.models import Owner, Profile
 from src.db.session import SessionLocal
 
 SEED_EMAIL = "owner@example.com"
+SEED_PASSWORD = "Owner123!"
 
 
 def seed() -> None:
@@ -20,8 +26,7 @@ def seed() -> None:
 
         owner = Owner(
             email=SEED_EMAIL,
-            # Not a real hash — dev/seed data only, never used for login.
-            password_hash="dev-seed-not-a-real-hash",
+            password_hash=hash_password(SEED_PASSWORD),
             first_name="Sample",
             last_name="Owner",
             is_active=True,
@@ -35,7 +40,7 @@ def seed() -> None:
         )
         db.add(owner)
         db.commit()
-        print(f"Seeded owner: {SEED_EMAIL}")
+        print(f"Seeded owner: {SEED_EMAIL} (password: {SEED_PASSWORD})")
     finally:
         db.close()
 
