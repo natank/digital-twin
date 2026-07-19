@@ -49,6 +49,7 @@ def create_access_token(
     payload: dict[str, Any] = {
         "sub": str(owner_id),
         "sid": str(session_id),
+        "jti": str(uuid.uuid4()),  # unique per issuance so refreshes differ
         "iat": int(now.timestamp()),
         "exp": int(expires_at.timestamp()),
         "type": "access",
