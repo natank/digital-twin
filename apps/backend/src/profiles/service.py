@@ -1,14 +1,22 @@
-"""Profile domain services: CRUD, auto-create, public limited view."""
+"""Profile domain services: CRUD, auto-create, public limited view, CV storage."""
 
 from __future__ import annotations
 
 import uuid
-from typing import Any
+from typing import Any, BinaryIO
 
 from backend_shared.exceptions import NotFoundError, ValidationError
 from sqlalchemy.orm import Session
 
 from src.db.models import Owner, Profile
+from src.profiles.storage import (
+    StoredObject,
+    delete_object,
+    parse_s3_key,
+    presigned_get_url,
+    upload_cv,
+)
+from src.settings import Settings, get_settings
 
 
 def get_or_create_profile(db: Session, owner: Owner) -> Profile:
@@ -141,4 +149,65 @@ def profile_to_response_dict(profile: Profile) -> dict[str, Any]:
         "has_extracted_text": bool(profile.cv_extracted_text),
         "created_at": profile.created_at,
         "updated_at": profile.updated_at,
+    }
+
+
+def store_owner_cv(
+    db: Session,
+    owner: Owner,
+    *,
+    filename: str,
+    content_type: str | None,
+    body: bytes | BinaryIO,
+    size: int | None = None,
+) -> tuple[Profile, StoredObject]:
+    """Upload CV to object storage and persist path on the profile."""
+    profile = get_or_create_profile(db, owner)
+    previous = profile.cv_file_path
+
+    stored = upload_cv(
+        owner_id=owner.id,
+        filename=filename,
+        content_type=content_type,
+        body=body,
+        size=size,
+    )
+
+    # New upload invalidates prior extraction until re-processed.
+    profile.cv_file_path = stored.s3_uri
+    profile.cv_extracted_text = None
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+
+    if previous:
+        try:
+            old_key = parse_s3_key(previous)
+            if old_key != stored.key:
+                delete_object(old_key)
+        except Exception:  # noqa: BLE001 — best-effort cleanup
+            pass
+
+    return profile, stored
+
+
+def get_cv_download_url(
+    db: Session,
+    owner: Owner,
+    *,
+    expires_in: int = 3600,
+    settings: Settings | None = None,
+) -> dict[str, Any]:
+    """Return a presigned URL for the owner's current CV."""
+    profile = get_or_create_profile(db, owner)
+    if not profile.cv_file_path:
+        raise NotFoundError("No CV uploaded for this profile")
+
+    cfg = settings or get_settings()
+    key = parse_s3_key(profile.cv_file_path, cfg.s3_bucket)
+    url = presigned_get_url(key, expires_in=expires_in)
+    return {
+        "url": url,
+        "expires_in_seconds": expires_in,
+        "cv_file_path": profile.cv_file_path,
     }

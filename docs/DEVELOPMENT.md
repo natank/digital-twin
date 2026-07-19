@@ -98,6 +98,21 @@ Env vars (see `.env.example`):
 | `CELERY_RESULT_BACKEND`    | Redis results (default DB 1)     |
 | `CELERY_TASK_ALWAYS_EAGER` | In-process tasks (tests / debug) |
 
+### LocalStack S3 (CV uploads)
+
+Compose starts LocalStack on `http://localhost:4566`. CV uploads go to
+bucket `S3_BUCKET` (default `digital-twin-dev`) under
+`cv-uploads/{owner_id}/…`. The API creates the bucket on first upload if
+missing. Unit tests use **moto** instead of LocalStack.
+
+```bash
+# After auth login:
+curl -X POST localhost:8000/profiles/me/cv \
+  -H "Authorization: Bearer $TOKEN" \
+  -F file=@./path/to/resume.pdf
+curl localhost:8000/profiles/me/cv -H "Authorization: Bearer $TOKEN"
+```
+
 ### Database helpers
 
 ```bash
