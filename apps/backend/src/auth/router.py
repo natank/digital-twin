@@ -10,9 +10,15 @@ from sqlalchemy.orm import Session
 
 from src.api.deps import get_current_owner, get_db
 from src.auth.rate_limit import get_login_rate_limiter
+from src.auth.oauth import (
+    ensure_oauth_configured,
+    get_oauth_client,
+    upsert_oauth_owner,
+)
 from src.auth.schemas import (
     ForgotPasswordRequest,
     LoginRequest,
+    OAuthTokenRequest,
     OwnerPublic,
     RegisterRequest,
     ResetPasswordRequest,
@@ -29,6 +35,7 @@ from src.auth.service import (
 )
 from src.auth.tokens import request_password_reset, reset_password, verify_email
 from src.db.models import Owner
+from src.settings import get_settings
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 _bearer = HTTPBearer(auto_error=False)
@@ -158,3 +165,45 @@ def reset_password_route(
     """Set a new password using a reset token; invalidates all sessions."""
     owner = reset_password(db, raw_token=body.token, new_password=body.new_password)
     return ApiResponse.ok(_owner_public(owner))
+
+
+def _oauth_login(
+    *,
+    provider: str,
+    access_token: str,
+    db: Session,
+) -> ApiResponse[TokenResponse]:
+    settings = get_settings()
+    ensure_oauth_configured(provider, settings)
+    client = get_oauth_client()
+    if provider == "google":
+        profile = client.fetch_google(access_token)
+    else:
+        profile = client.fetch_github(access_token)
+    owner = upsert_oauth_owner(db, provider=provider, profile=profile)
+    token, expires_at, _session = create_owner_session(db, owner, settings=settings)
+    return ApiResponse.ok(
+        TokenResponse(
+            access_token=token,
+            expires_at=expires_at,
+            owner=_owner_public(owner),
+        )
+    )
+
+
+@router.post("/oauth/google", response_model=ApiResponse[TokenResponse])
+def oauth_google(
+    body: OAuthTokenRequest,
+    db: Session = Depends(get_db),
+) -> ApiResponse[TokenResponse]:
+    """Exchange a Google access token for a platform JWT session."""
+    return _oauth_login(provider="google", access_token=body.access_token, db=db)
+
+
+@router.post("/oauth/github", response_model=ApiResponse[TokenResponse])
+def oauth_github(
+    body: OAuthTokenRequest,
+    db: Session = Depends(get_db),
+) -> ApiResponse[TokenResponse]:
+    """Exchange a GitHub access token for a platform JWT session."""
+    return _oauth_login(provider="github", access_token=body.access_token, db=db)
