@@ -56,8 +56,18 @@ def db_session() -> Session:
 
 
 @pytest.fixture()
-def client(db_session: Session) -> TestClient:
-    """HTTP client with get_db overridden to the in-memory session."""
+def client(db_session: Session, monkeypatch: pytest.MonkeyPatch) -> TestClient:
+    """HTTP client with get_db overridden to the in-memory session.
+
+    Also redirects ``SessionLocal`` (used by Celery tasks) at the same
+    SQLite engine so eager tasks see API-created rows.
+    """
+    from sqlalchemy.orm import sessionmaker
+
+    from src.db import session as session_mod
+
+    factory = sessionmaker(bind=db_session.get_bind(), autoflush=False, autocommit=False)
+    monkeypatch.setattr(session_mod, "SessionLocal", factory)
 
     def _override_get_db():  # type: ignore[no-untyped-def]
         try:

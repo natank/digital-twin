@@ -104,3 +104,25 @@ class OwnerToken(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
 
     owner: Mapped["Owner"] = relationship()
+
+
+class CVProcessingJob(Base):
+    """Async job tracking CV text extraction and summary generation."""
+
+    __tablename__ = "cv_processing_jobs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("owners.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    cv_file_path: Mapped[str] = mapped_column(String(1024), nullable=False)
+    # pending | processing | completed | failed
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending", index=True)
+    extracted_text: Mapped[str | None] = mapped_column(String, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    owner: Mapped["Owner"] = relationship()
