@@ -7,5 +7,6 @@ exclude =
 	.tox,
 	venv,
 	.venv,
-	.pytest_cache
+	.pytest_cache,
+	migrations/versions
 max-line-length = 120
