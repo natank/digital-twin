@@ -30,16 +30,23 @@ Week 2:
 
 ## PR Breakdown Summary
 
-| PR # | Title | Scope | Lines | Days | Priority |
-|------|-------|-------|-------|------|----------|
-| **001** | Nx Monorepo Initialization | Build system setup | 200-400 | 2 | P0 Critical |
-| **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 | 2 | P0 Critical |
-| **003** | Development Environment | Config, env variables | 150-250 | 1-2 | P1 High |
-| **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 | 2 | P0 Critical |
-| **005** | Shared Libraries | Backend/frontend shared code | 200-400 | 2 | P1 High |
-| **006** | Development Tooling | Scripts, linting, docs | 300-500 | 1-2 | P2 Medium |
+| PR # | Title | Scope | Lines | Days | Priority | Status |
+|------|-------|-------|-------|------|----------|--------|
+| **001** | Nx Monorepo Initialization | Build system setup | 200-400 (actual: ~11,800, mostly lockfiles) | 2 | P0 Critical | ✅ Merged ([#3](https://github.com/natank/digital-twin/pull/3)) |
+| **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 | 2 | P0 Critical | Not started |
+| **003** | Development Environment | Config, env variables | 150-250 | 1-2 | P1 High | Not started |
+| **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 | 2 | P0 Critical | Not started |
+| **005** | Shared Libraries | Backend/frontend shared code | 200-400 | 2 | P1 High | Not started |
+| **006** | Development Tooling | Scripts, linting, docs | 300-500 | 1-2 | P2 Medium | Not started |
 
-**Total Scope:** ~1,550-2,650 lines of code/config across 6 PRs
+**Total Scope:** ~1,550-2,650 lines of code/config across 6 PRs (estimate; PR-001's actual diff was larger due to committed `pnpm-lock.yaml`/`poetry.lock` files, which weren't counted in the original estimate)
+
+### PR-001 Notes (as merged)
+- Used `@nxlv/python` instead of the originally planned `@nxext/python`, which is unmaintained
+- Used Nx 23.x (current stable) rather than the version assumed when this doc was written
+- Restructured `@nxlv/python` generator output to a flat `src/` layout (matches TECHNICAL_DESIGN.md) instead of its default nested path
+- New dev-machine prerequisite surfaced: `poetry-plugin-export` (via `pipx inject poetry poetry-plugin-export`) is required for Nx's Python build executor — not yet documented in a setup guide (lands in PR-006)
+- Full rationale in `pr-work/PHASE0-001-nx-monorepo/PR_DESCRIPTION.md` (local, gitignored)
 
 ---
 
