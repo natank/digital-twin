@@ -37,6 +37,21 @@ def seed() -> None:
             bio="Sample seeded profile for local development.",
             skills=["Python", "TypeScript", "FastAPI"],
             experience_years=5,
+            profile_summary={
+                "headline": "Software Engineer",
+                "summary": (
+                    "Sample owner used for local demos. Experienced with Python, "
+                    "TypeScript, and FastAPI backends."
+                ),
+                "highlights": ["Built modular monolith platforms"],
+                "skills": ["Python", "TypeScript", "FastAPI"],
+                "experience_years": 5,
+            },
+            cv_extracted_text=(
+                "Sample Owner\nSoftware Engineer\n"
+                "Skills: Python, TypeScript, FastAPI\n"
+                "Experience: 5 years building web APIs and AI assistants."
+            ),
         )
         db.add(owner)
         db.commit()

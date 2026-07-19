@@ -49,7 +49,7 @@ class PublicProfileResponse(BaseSchema):
 class ProfileSummaryUpdateRequest(BaseSchema):
     """Owner edit of the structured AI-generated summary."""
 
-    profile_summary: dict[str, Any] = Field(min_length=1)
+    profile_summary: dict[str, Any]
     skills: list[str] | None = None
     experience_years: int | None = Field(default=None, ge=0, le=80)
 

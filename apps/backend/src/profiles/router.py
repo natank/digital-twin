@@ -15,6 +15,8 @@ from src.profiles.schemas import (
     CVJobResponse,
     CVUploadResponse,
     ProfileResponse,
+    ProfileSummaryResponse,
+    ProfileSummaryUpdateRequest,
     ProfileUpdateRequest,
     PublicProfileResponse,
 )
@@ -24,9 +26,12 @@ from src.profiles.service import (
     get_cv_job,
     get_profile_for_owner,
     get_public_profile,
+    get_summary_payload,
     profile_to_response_dict,
+    regenerate_profile_summary,
     store_owner_cv,
     update_profile,
+    update_profile_summary,
 )
 
 router = APIRouter(prefix="/profiles", tags=["Profiles"])
@@ -111,8 +116,8 @@ def process_my_cv(
     owner: Owner = Depends(get_current_owner),
     db: Session = Depends(get_db),
 ) -> ApiResponse[CVJobResponse]:
-    """Enqueue async CV text extraction for the owner's uploaded CV."""
-    job = enqueue_cv_processing(db, owner, generate_summary=False)
+    """Enqueue async CV text extraction + LLM profile summary."""
+    job = enqueue_cv_processing(db, owner, generate_summary=True)
     return ApiResponse.ok(
         CVJobResponse(
             id=job.id,
@@ -122,6 +127,56 @@ def process_my_cv(
             error_message=job.error_message,
             created_at=job.created_at,
             updated_at=job.updated_at,
+        )
+    )
+
+
+@router.get("/me/summary", response_model=ApiResponse[ProfileSummaryResponse])
+def get_my_summary(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[ProfileSummaryResponse]:
+    """Return the structured profile summary (AI-generated or owner-edited)."""
+    payload = get_summary_payload(db, owner)
+    return ApiResponse.ok(ProfileSummaryResponse.model_validate(payload))
+
+
+@router.put("/me/summary", response_model=ApiResponse[ProfileSummaryResponse])
+def put_my_summary(
+    body: ProfileSummaryUpdateRequest,
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[ProfileSummaryResponse]:
+    """Owner edit of the structured profile summary."""
+    profile = update_profile_summary(
+        db,
+        owner,
+        profile_summary=body.profile_summary,
+        skills=body.skills,
+        experience_years=body.experience_years,
+        fields_set=set(body.model_fields_set),
+    )
+    return ApiResponse.ok(
+        ProfileSummaryResponse(
+            profile_summary=profile.profile_summary,
+            skills=profile.skills,
+            experience_years=profile.experience_years,
+        )
+    )
+
+
+@router.post("/me/summary/regenerate", response_model=ApiResponse[ProfileSummaryResponse])
+def regenerate_my_summary(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[ProfileSummaryResponse]:
+    """Re-run LLM summary from existing extracted CV text (synchronous)."""
+    profile = regenerate_profile_summary(db, owner)
+    return ApiResponse.ok(
+        ProfileSummaryResponse(
+            profile_summary=profile.profile_summary,
+            skills=profile.skills,
+            experience_years=profile.experience_years,
         )
     )
 
