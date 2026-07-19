@@ -46,51 +46,51 @@ Buffer (end of Week 8 / start of Phase 2 planning):
 
 ## PR Breakdown Summary
 
-| PR # | Title | Epic | Week | Est. lines | Priority | Status |
-|------|-------|------|------|------------|----------|--------|
-| **001** | API foundation | — | 3 | 250–400 | P0 | Not started |
-| **002** | Auth: register / login / me | E1 | 3 | 400–600 | P0 | Not started |
-| **003** | Auth: session lifecycle + rate limit | E1 | 3–4 | 250–400 | P0 | Not started |
-| **004** | Auth: verify email + password reset | E1 | 4 | 350–500 | P1 | Not started |
-| **005** | Auth: OAuth skeleton | E1 | 4 | 200–350 | P2 | Not started |
-| **006** | Celery worker infrastructure | — | 5 | 250–400 | P0 | Not started |
-| **007** | Profile CRUD API | E2 | 5 | 300–450 | P0 | Not started |
-| **008** | CV upload + object storage | E2 | 5 | 350–500 | P0 | Not started |
-| **009** | CV extraction + job pipeline | E2 | 5–6 | 400–600 | P0 | Not started |
-| **010** | LLM profile summary | E2 | 6 | 400–600 | P0 | Not started |
-| **011** | Chat models + sessions | E3 | 7 | 350–500 | P0 | Not started |
-| **012** | Chat messages + LLM replies | E3 | 7–8 | 450–700 | P0 | Not started |
-| **013** | Chat streaming + boundaries | E3 | 8 | 350–550 | P1 | Not started |
-| **014** | Integration tests & API polish | — | 8 | 300–500 | P1 | Not started |
+| PR #    | Title                                | Epic | Week | Est. lines | Priority | Status      |
+| ------- | ------------------------------------ | ---- | ---- | ---------- | -------- | ----------- |
+| **001** | API foundation                       | —    | 3    | 250–400    | P0       | Not started |
+| **002** | Auth: register / login / me          | E1   | 3    | 400–600    | P0       | Not started |
+| **003** | Auth: session lifecycle + rate limit | E1   | 3–4  | 250–400    | P0       | Not started |
+| **004** | Auth: verify email + password reset  | E1   | 4    | 350–500    | P1       | Not started |
+| **005** | Auth: OAuth skeleton                 | E1   | 4    | 200–350    | P2       | Not started |
+| **006** | Celery worker infrastructure         | —    | 5    | 250–400    | P0       | Not started |
+| **007** | Profile CRUD API                     | E2   | 5    | 300–450    | P0       | Not started |
+| **008** | CV upload + object storage           | E2   | 5    | 350–500    | P0       | Not started |
+| **009** | CV extraction + job pipeline         | E2   | 5–6  | 400–600    | P0       | Not started |
+| **010** | LLM profile summary                  | E2   | 6    | 400–600    | P0       | Not started |
+| **011** | Chat models + sessions               | E3   | 7    | 350–500    | P0       | Not started |
+| **012** | Chat messages + LLM replies          | E3   | 7–8  | 450–700    | P0       | Not started |
+| **013** | Chat streaming + boundaries          | E3   | 8    | 350–550    | P1       | Not started |
+| **014** | Integration tests & API polish       | —    | 8    | 300–500    | P1       | Not started |
 
 **Total scope (estimate):** ~4,500–7,000 lines across 14 PRs (application code + migrations + tests; lockfile churn excluded).
 
 ### What Phase 0 already provides (do not rebuild)
 
-| Asset | Location | Phase 1 usage |
-|-------|----------|----------------|
-| `Owner`, `OwnerSession`, `Profile` models | `apps/backend/src/db/models.py` | Extend with new tables; auth/profile reuse existing rows |
-| Alembic + migrate/seed Nx targets | `apps/backend` | New revisions only |
-| DB session dependency | `apps/backend/src/db/session.py` | Inject into routes |
-| Settings (root `.env.local`) | `apps/backend/src/settings.py` | Expand fields (JWT, S3, Claude, email, OAuth) |
-| Exceptions, schemas, utils, logging | `libs/backend-shared` | Import; add auth helpers where shared |
-| Password policy helper | `backend_shared.utils.validate_password_strength` | Registration / reset |
-| LocalStack S3, Redis, Postgres | `docker-compose.yml` | Storage + Celery broker + DB |
-| CI quality gates | `.github/workflows/ci.yml` | All PRs must stay green |
+| Asset                                     | Location                                          | Phase 1 usage                                            |
+| ----------------------------------------- | ------------------------------------------------- | -------------------------------------------------------- |
+| `Owner`, `OwnerSession`, `Profile` models | `apps/backend/src/db/models.py`                   | Extend with new tables; auth/profile reuse existing rows |
+| Alembic + migrate/seed Nx targets         | `apps/backend`                                    | New revisions only                                       |
+| DB session dependency                     | `apps/backend/src/db/session.py`                  | Inject into routes                                       |
+| Settings (root `.env.local`)              | `apps/backend/src/settings.py`                    | Expand fields (JWT, S3, Claude, email, OAuth)            |
+| Exceptions, schemas, utils, logging       | `libs/backend-shared`                             | Import; add auth helpers where shared                    |
+| Password policy helper                    | `backend_shared.utils.validate_password_strength` | Registration / reset                                     |
+| LocalStack S3, Redis, Postgres            | `docker-compose.yml`                              | Storage + Celery broker + DB                             |
+| CI quality gates                          | `.github/workflows/ci.yml`                        | All PRs must stay green                                  |
 
 ### Explicitly deferred (not Phase 1)
 
-| Item | When |
-|------|------|
-| React auth/profile/chat UI | Phase 3 |
-| LinkedIn integration (E2-S5) | Post-MVP / later epic (P2) |
-| Config Service custom system prompts (E5) | Phase 2 — Chat uses a **built-in default** prompt |
-| Notification Service / Pushover (E4) | Phase 2 — Chat may emit in-process events/hooks only |
-| Analytics (E7) | Optional later |
-| WebSocket chat | Optional; **SSE preferred** in PR-013 for MVP |
-| Virus scan on CV upload | Stub/log only; real scanning later |
-| Production email provider | Interface + console/dev backend; SendGrid/SES Phase 4 |
-| Password history (last 5) | Nice-to-have; simple single-hash invalidation is enough for MVP |
+| Item                                      | When                                                            |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| React auth/profile/chat UI                | Phase 3                                                         |
+| LinkedIn integration (E2-S5)              | Post-MVP / later epic (P2)                                      |
+| Config Service custom system prompts (E5) | Phase 2 — Chat uses a **built-in default** prompt               |
+| Notification Service / Pushover (E4)      | Phase 2 — Chat may emit in-process events/hooks only            |
+| Analytics (E7)                            | Optional later                                                  |
+| WebSocket chat                            | Optional; **SSE preferred** in PR-013 for MVP                   |
+| Virus scan on CV upload                   | Stub/log only; real scanning later                              |
+| Production email provider                 | Interface + console/dev backend; SendGrid/SES Phase 4           |
+| Password history (last 5)                 | Nice-to-have; simple single-hash invalidation is enough for MVP |
 
 ---
 
@@ -122,6 +122,7 @@ PR-002+ required for protected routes ──────────────
 ```
 
 **Hard rules:**
+
 - No protected Profile/Chat routes before **PR-002** lands (`get_current_owner`).
 - No CV async processing before **PR-006**.
 - No Chat LLM replies without a usable profile summary path (**PR-010** or a test fixture that seeds summary JSON).
@@ -132,9 +133,11 @@ PR-002+ required for protected routes ──────────────
 ## PR-001: API Foundation
 
 ### Objective
+
 Wire the modular monolith so domain modules can mount routers with consistent errors, settings, CORS, and auth dependency hooks.
 
 ### Scope
+
 - [ ] Package layout under `apps/backend/src/`:
   - `api/` or module packages: `auth/`, `profiles/`, `chat/` (empty routers OK)
   - `core/` or `middleware/`: exception handlers, CORS, request ID logging
@@ -145,6 +148,7 @@ Wire the modular monolith so domain modules can mount routers with consistent er
 - [ ] OpenAPI tags: Auth, Profiles, Chat
 
 ### Suggested files
+
 ```
 apps/backend/src/
 ├── main.py                    # include routers, middleware
@@ -159,6 +163,7 @@ apps/backend/src/
 ```
 
 ### Validation
+
 ```bash
 pnpm nx serve apps/backend
 curl -s localhost:8000/health
@@ -167,11 +172,13 @@ pnpm nx test apps/backend
 ```
 
 ### Testing
+
 - [ ] Exception handler returns envelope for `ValidationError` / `NotFoundError`
 - [ ] CORS preflight OK for configured origin
 - [ ] `/health` unchanged
 
 ### Estimated effort
+
 **1–2 days** — 250–400 lines
 
 ---
@@ -179,9 +186,11 @@ pnpm nx test apps/backend
 ## PR-002: Auth — Registration, Login, JWT, Me
 
 ### Objective
+
 Owners can register with email/password, log in, and fetch their identity. Implements E1-S1 (core) + E1-S2 (core, no OAuth yet).
 
 ### Scope
+
 - [ ] Password hashing: **bcrypt** (or argon2 — pick one; document in PR notes)
 - [ ] JWT access tokens (secret + expiry from settings; align with `JWT_SECRET` / `JWT_EXPIRY` already in `.env.example`)
 - [ ] Persist `OwnerSession` on login (token hash or jti stored — never store raw JWT if avoidable; document choice)
@@ -196,16 +205,18 @@ Owners can register with email/password, log in, and fetch their identity. Imple
 - [ ] Seed script optionally uses real password hash for `owner@example.com` (update seed)
 
 ### Acceptance mapping
-| Criteria | Approach |
-|----------|----------|
-| Email/password register | Full |
-| Password policy | Full via shared utils |
-| Duplicate email | Full |
+
+| Criteria                             | Approach                                                                                           |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Email/password register              | Full                                                                                               |
+| Password policy                      | Full via shared utils                                                                              |
+| Duplicate email                      | Full                                                                                               |
 | Email verification before activation | **Partial:** `email_verified=False` on register; enforce in PR-004 or allow login in dev with flag |
-| Welcome email | Defer send to PR-004 interface (log only OK here) |
-| OAuth register | PR-005 |
+| Welcome email                        | Defer send to PR-004 interface (log only OK here)                                                  |
+| OAuth register                       | PR-005                                                                                             |
 
 ### Validation
+
 ```bash
 # register → login → me
 curl -X POST localhost:8000/auth/register -H 'Content-Type: application/json' -d '{...}'
@@ -214,11 +225,13 @@ curl localhost:8000/auth/me -H "Authorization: Bearer $TOKEN"
 ```
 
 ### Testing
+
 - [ ] Unit: hash/verify, JWT encode/decode
 - [ ] API: register happy path, weak password, duplicate email
 - [ ] API: login success/fail, me with/without token
 
 ### Estimated effort
+
 **2–3 days** — 400–600 lines
 
 ---
@@ -226,9 +239,11 @@ curl localhost:8000/auth/me -H "Authorization: Bearer $TOKEN"
 ## PR-003: Auth — Logout, Refresh, Rate Limiting
 
 ### Objective
+
 Complete session lifecycle and brute-force protection (E1-S2 remainder).
 
 ### Scope
+
 - [ ] `POST /auth/logout` — invalidate current session (DB row + client discards token)
 - [ ] `POST /auth/refresh-token` — rotate access token; bound to valid session
 - [ ] Login rate limit: **5 attempts / 15 min** per email (and optionally per IP)
@@ -237,6 +252,7 @@ Complete session lifecycle and brute-force protection (E1-S2 remainder).
 - [ ] CORS already from PR-001; confirm credentials headers if cookie-based (prefer **Bearer** for API)
 
 ### Validation
+
 ```bash
 # 6 failed logins → 429
 # logout → me returns 401
@@ -244,11 +260,13 @@ Complete session lifecycle and brute-force protection (E1-S2 remainder).
 ```
 
 ### Testing
+
 - [ ] Rate limit integration test (Redis or fake)
 - [ ] Logout invalidates session
 - [ ] Refresh rejects expired/revoked sessions
 
 ### Estimated effort
+
 **1–2 days** — 250–400 lines
 
 ---
@@ -256,9 +274,11 @@ Complete session lifecycle and brute-force protection (E1-S2 remainder).
 ## PR-004: Auth — Email Verification & Password Reset
 
 ### Objective
+
 E1-S1 verification + E1-S3 recovery, with a pluggable email backend.
 
 ### Scope
+
 - [ ] Email abstraction: `EmailSender` protocol + `ConsoleEmailSender` (dev logs body)
 - [ ] Email verification token (store hash, TTL e.g. 24h)
   - `POST /auth/verify-email` or `GET /auth/verify-email?token=`
@@ -272,15 +292,18 @@ E1-S1 verification + E1-S3 recovery, with a pluggable email backend.
 - [ ] **Skip** password history of last 5 for MVP (note deviation)
 
 ### Models / migration
+
 - Prefer columns on `owners` or small `owner_tokens` table (`type`, `token_hash`, `expires_at`) — choose one approach and migrate via Alembic autogenerate
 
 ### Testing
+
 - [ ] Verify flow activates account
 - [ ] Reset flow changes password; old login fails
 - [ ] Expired/invalid tokens rejected
 - [ ] Console email captured in tests via fake sender
 
 ### Estimated effort
+
 **2 days** — 350–500 lines
 
 ---
@@ -288,9 +311,11 @@ E1-S1 verification + E1-S3 recovery, with a pluggable email backend.
 ## PR-005: Auth — OAuth Skeleton (Google / GitHub)
 
 ### Objective
+
 Scaffold OAuth without blocking MVP email/password path (E1-S1/S2 OAuth AC partial).
 
 ### Scope
+
 - [ ] Routes:
   - `POST /auth/oauth/google` (or start + callback pair)
   - `POST /auth/oauth/github`
@@ -301,10 +326,12 @@ Scaffold OAuth without blocking MVP email/password path (E1-S1/S2 OAuth AC parti
 - [ ] Integration tests with **mocked** provider token exchange
 
 ### Out of scope
+
 - Full browser OAuth dance UI (Phase 3)
 - Account linking when email already exists (document as follow-up)
 
 ### Estimated effort
+
 **1–2 days** — 200–350 lines
 
 ---
@@ -312,9 +339,11 @@ Scaffold OAuth without blocking MVP email/password path (E1-S1/S2 OAuth AC parti
 ## PR-006: Celery Worker Infrastructure
 
 ### Objective
+
 Async task runner on Redis for CV processing (and later notifications).
 
 ### Scope
+
 - [ ] Add Celery app (`apps/backend/src/worker/` or `tasks/`)
 - [ ] Broker/backend = `REDIS_URL`
 - [ ] Example health task `tasks.ping`
@@ -324,6 +353,7 @@ Async task runner on Redis for CV processing (and later notifications).
 - [ ] Logging integration with `backend_shared.logging`
 
 ### Validation
+
 ```bash
 # terminal A
 pnpm nx serve apps/backend
@@ -333,10 +363,12 @@ poetry run celery -A src.worker.celery_app worker -l INFO
 ```
 
 ### Testing
+
 - [ ] Unit: task registration
 - [ ] Optional: eager mode `CELERY_TASK_ALWAYS_EAGER=true` in pytest
 
 ### Estimated effort
+
 **1–2 days** — 250–400 lines
 
 ---
@@ -344,9 +376,11 @@ poetry run celery -A src.worker.celery_app worker -l INFO
 ## PR-007: Profile CRUD API
 
 ### Objective
+
 Authenticated owners can read/update their profile (E1-S4 + E2 foundation). Models already exist from Phase 0.
 
 ### Scope
+
 - [ ] Endpoints (owner-scoped; prefer `/profiles/me` to avoid IDOR):
   - `GET /profiles/me`
   - `PUT /profiles/me` (bio, headline, skills, experience_years)
@@ -356,11 +390,13 @@ Authenticated owners can read/update their profile (E1-S4 + E2 foundation). Mode
 - [ ] Authorization: only self for write
 
 ### Testing
+
 - [ ] CRUD happy path
 - [ ] Other owner cannot update (if numeric id routes exist)
 - [ ] Unauthenticated → 401
 
 ### Estimated effort
+
 **1–2 days** — 300–450 lines
 
 ---
@@ -368,9 +404,11 @@ Authenticated owners can read/update their profile (E1-S4 + E2 foundation). Mode
 ## PR-008: CV Upload + Object Storage
 
 ### Objective
+
 Owners upload PDF/DOCX to S3-compatible storage (LocalStack in dev) — E2-S1.
 
 ### Scope
+
 - [ ] `POST /profiles/me/cv` (multipart) — alias PRD `POST /profiles/cv/upload`
 - [ ] Validate: content type, extension, max **10MB**
 - [ ] Store under `s3://{bucket}/cv-uploads/{owner_id}/{uuid}-{filename}`
@@ -381,11 +419,13 @@ Owners upload PDF/DOCX to S3-compatible storage (LocalStack in dev) — E2-S1.
 - [ ] Virus scan: stub hook (log “skipped in dev”)
 
 ### Testing
+
 - [ ] Reject oversize / bad type
 - [ ] Upload hits LocalStack (or moto)
 - [ ] Path persisted on profile
 
 ### Estimated effort
+
 **2 days** — 350–500 lines
 
 ---
@@ -393,9 +433,11 @@ Owners upload PDF/DOCX to S3-compatible storage (LocalStack in dev) — E2-S1.
 ## PR-009: CV Text Extraction + Processing Jobs
 
 ### Objective
+
 Async extract text from uploaded CVs — E2-S2.
 
 ### Scope
+
 - [ ] Model `CVProcessingJob` (+ Alembic migration)
 - [ ] `POST /profiles/me/process-cv` enqueues Celery task
 - [ ] Task: download from S3 → extract (pypdf / python-docx) → clean text → update job + `Profile.cv_extracted_text`
@@ -404,11 +446,13 @@ Async extract text from uploaded CVs — E2-S2.
 - [ ] Failures set `error_message`; owner-visible safe message
 
 ### Testing
+
 - [ ] PDF and DOCX fixtures
 - [ ] Failed extraction marks job failed
 - [ ] Eager Celery in unit tests
 
 ### Estimated effort
+
 **2–3 days** — 400–600 lines
 
 ---
@@ -416,9 +460,11 @@ Async extract text from uploaded CVs — E2-S2.
 ## PR-010: LLM Profile Summary Generation
 
 ### Objective
+
 Generate structured profile summary via Claude — E2-S3 + E2-S4 API side.
 
 ### Scope
+
 - [ ] Claude client wrapper (httpx/anthropic SDK); `CLAUDE_API_KEY` from settings
 - [ ] Extend processing pipeline or separate task step: extracted text → JSON summary
 - [ ] Store `profile_summary`, `skills`, `experience_years` when present in model output
@@ -431,11 +477,13 @@ Generate structured profile summary via Claude — E2-S3 + E2-S4 API side.
 - [ ] Timeout / failure handling with owner-visible error
 
 ### Testing
+
 - [ ] Mocked LLM success updates profile
 - [ ] Owner PUT summary validation
 - [ ] Missing CV text → 400
 
 ### Estimated effort
+
 **2–3 days** — 400–600 lines
 
 ---
@@ -443,9 +491,11 @@ Generate structured profile summary via Claude — E2-S3 + E2-S4 API side.
 ## PR-011: Chat Models + Session Lifecycle
 
 ### Objective
+
 Visitors get anonymous chat sessions bound to an owner twin — E3-S4 foundation.
 
 ### Scope
+
 - [ ] Models + migration:
   - `ChatSession` (owner_id, public session key, visitor_ip hash optional, expires_at)
   - `Message` (session_id, sender enum, content, tokens_used)
@@ -459,11 +509,13 @@ Visitors get anonymous chat sessions bound to an owner twin — E3-S4 foundation
 - [ ] Public read of twin metadata minimal (headline only) optional
 
 ### Testing
+
 - [ ] Session create/get/delete
 - [ ] Expired session rejected
 - [ ] Unknown owner → 404
 
 ### Estimated effort
+
 **2 days** — 350–500 lines
 
 ---
@@ -471,9 +523,11 @@ Visitors get anonymous chat sessions bound to an owner twin — E3-S4 foundation
 ## PR-012: Chat Messages + LLM Responses
 
 ### Objective
+
 Visitors send messages; twin replies from profile context — E3-S2 core (non-streaming first).
 
 ### Scope
+
 - [ ] `POST /chat/sessions/{session_id}/messages` — visitor message
 - [ ] `GET /chat/sessions/{session_id}/messages` — history
 - [ ] Validate max **10K** chars
@@ -485,12 +539,14 @@ Visitors send messages; twin replies from profile context — E3-S2 core (non-st
 - [ ] Hook point for notifications (no-op / log event `message_processed`)
 
 ### Testing
+
 - [ ] Message persistence order
 - [ ] Mocked LLM reply stored
 - [ ] Reject empty / oversize messages
 - [ ] Expired session cannot post
 
 ### Estimated effort
+
 **2–3 days** — 450–700 lines
 
 ---
@@ -498,9 +554,11 @@ Visitors send messages; twin replies from profile context — E3-S2 core (non-st
 ## PR-013: Streaming, Boundaries, Visitor Rate Limits
 
 ### Objective
+
 Better UX and safety — E3-S2 streaming, E3-S3 boundaries, abuse controls.
 
 ### Scope
+
 - [ ] SSE endpoint: `GET /chat/sse/{session_id}/stream` or stream on POST via `text/event-stream`
 - [ ] Boundary enforcement: system prompt rules + optional lightweight classifier/heuristic
   - Off-topic → polite redirect; still persist messages
@@ -509,11 +567,13 @@ Better UX and safety — E3-S2 streaming, E3-S3 boundaries, abuse controls.
 - [ ] Document WebSocket as future alternative (not required)
 
 ### Testing
+
 - [ ] SSE emits chunks then completes (TestClient/httpx stream)
 - [ ] Boundary cases return redirect-style content
 - [ ] Rate limit returns 429
 
 ### Estimated effort
+
 **2 days** — 350–550 lines
 
 ---
@@ -521,13 +581,15 @@ Better UX and safety — E3-S2 streaming, E3-S3 boundaries, abuse controls.
 ## PR-014: Phase 1 Integration Tests & API Polish
 
 ### Objective
+
 Cross-module confidence and clean handoff to Phase 2/3.
 
 ### Scope
+
 - [ ] E2E-style API tests (pytest):
-  1. Register → login  
-  2. Upload CV fixture → process (eager Celery) → summary present  
-  3. Create chat session as visitor → message → AI reply  
+  1. Register → login
+  2. Upload CV fixture → process (eager Celery) → summary present
+  3. Create chat session as visitor → message → AI reply
 - [ ] OpenAPI review: consistent tags, examples, error schemas
 - [ ] Update `docs/DEVELOPMENT.md` with worker + auth + LocalStack S3 usage
 - [ ] Update `.env.example` with any new vars
@@ -536,10 +598,12 @@ Cross-module confidence and clean handoff to Phase 2/3.
 - [ ] Optional: `scripts/` smoke script for local demo
 
 ### Testing
+
 - [ ] Integration suite green in CI (mock LLM; LocalStack or moto for S3)
 - [ ] No live Claude/Pushover calls in CI
 
 ### Estimated effort
+
 **2 days** — 300–500 lines
 
 ---
@@ -590,14 +654,14 @@ apps/backend/src/
 
 ## Testing Strategy (Phase 1)
 
-| Layer | Tools | Notes |
-|-------|-------|-------|
-| Unit | pytest | Services, security, prompts, extraction |
-| API | httpx + FastAPI TestClient | Auth headers, multipart upload |
-| Async tasks | Celery eager mode | Default in tests |
-| LLM | Mock / respx | Never call real API in CI |
-| S3 | LocalStack or moto | Prefer moto for unit speed |
-| Redis | fakeredis or real compose | Rate limits |
+| Layer       | Tools                      | Notes                                   |
+| ----------- | -------------------------- | --------------------------------------- |
+| Unit        | pytest                     | Services, security, prompts, extraction |
+| API         | httpx + FastAPI TestClient | Auth headers, multipart upload          |
+| Async tasks | Celery eager mode          | Default in tests                        |
+| LLM         | Mock / respx               | Never call real API in CI               |
+| S3          | LocalStack or moto         | Prefer moto for unit speed              |
+| Redis       | fakeredis or real compose  | Rate limits                             |
 
 **Coverage target:** keep Phase 0 standard — aim ≥80% on new modules; enforce in review not necessarily CI gate yet.
 
@@ -647,6 +711,7 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/1
 ## PR Management (Phase 1)
 
 ### Branch naming
+
 ```text
 phase-1/{pr-number}-{short-slug}
 # examples:
@@ -656,6 +721,7 @@ phase-1/010-profile-llm-summary
 ```
 
 ### Commit messages
+
 ```text
 feat(auth): register and login with JWT
 feat(profiles): upload CV to LocalStack S3
@@ -665,11 +731,13 @@ docs(phase-1): note OAuth skeleton limits
 ```
 
 ### PR titles
+
 ```text
 [Phase-1] PR-002 Auth register/login/me
 ```
 
 ### pr-work artifacts (local, gitignored)
+
 ```text
 pr-work/PHASE1-002-auth-register-login/
   PR_DESCRIPTION.md
@@ -677,6 +745,7 @@ pr-work/PHASE1-002-auth-register-login/
 ```
 
 ### Review bar
+
 - CI green (`quality`, `test`, `build`, docker checks)
 - Migrations reversible (`upgrade` / `downgrade` smoke)
 - No real secrets; LLM/S3 mocked in unit tests
@@ -684,11 +753,12 @@ pr-work/PHASE1-002-auth-register-login/
 - 1 approval (or `--admin` if solo, same as late Phase 0)
 
 ### Recommended sequencing (solo or small team)
-1. **001 → 002 → 003** (auth usable)  
-2. **004** and **005** can trail; **006** can start after 001  
-3. **007 → 008 → 009 → 010** (profile pipeline)  
-4. **011 → 012 → 013** (chat)  
-5. **014** closes the phase  
+
+1. **001 → 002 → 003** (auth usable)
+2. **004** and **005** can trail; **006** can start after 001
+3. **007 → 008 → 009 → 010** (profile pipeline)
+4. **011 → 012 → 013** (chat)
+5. **014** closes the phase
 
 Parallelism: after **002**, Profile work needs auth; Celery **006** can proceed in parallel with **003–005**.
 
@@ -696,21 +766,22 @@ Parallelism: after **002**, Profile work needs auth; Celery **006** can proceed 
 
 ## Risks & Mitigations
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Claude API cost/flakes in dev | Medium | Mock default; live key only opt-in |
-| LocalStack S3 quirks | Medium | moto in unit tests; one manual LocalStack check per PR-008 |
-| JWT/session design churn | Medium | Decide token storage in PR-002 notes; avoid dual systems |
-| CV extraction quality variance | High | Store raw text; allow owner summary edit (PR-010) |
-| Scope creep (LinkedIn, WS, virus scan) | High | Deferred list above; reject in review |
-| Celery + FastAPI dual process DX | Medium | Document in DEVELOPMENT.md; eager mode for tests |
-| IDOR on profile/chat | Medium | Prefer `/me` routes; explicit owner checks in tests |
+| Risk                                   | Likelihood | Mitigation                                                 |
+| -------------------------------------- | ---------- | ---------------------------------------------------------- |
+| Claude API cost/flakes in dev          | Medium     | Mock default; live key only opt-in                         |
+| LocalStack S3 quirks                   | Medium     | moto in unit tests; one manual LocalStack check per PR-008 |
+| JWT/session design churn               | Medium     | Decide token storage in PR-002 notes; avoid dual systems   |
+| CV extraction quality variance         | High       | Store raw text; allow owner summary edit (PR-010)          |
+| Scope creep (LinkedIn, WS, virus scan) | High       | Deferred list above; reject in review                      |
+| Celery + FastAPI dual process DX       | Medium     | Document in DEVELOPMENT.md; eager mode for tests           |
+| IDOR on profile/chat                   | Medium     | Prefer `/me` routes; explicit owner checks in tests        |
 
 ---
 
 ## Phase 1 Sign-Off Checklist
 
 **Auth (E1)**
+
 - [ ] Register + login + `/auth/me` work against live Postgres
 - [ ] Logout / refresh / rate limit verified
 - [ ] Password reset path works with console email
@@ -718,6 +789,7 @@ Parallelism: after **002**, Profile work needs auth; Celery **006** can proceed 
 - [ ] Passwords hashed; JWT secret not default in non-dev envs (docs warn)
 
 **Profile (E2)**
+
 - [ ] Owner can CRUD profile fields
 - [ ] CV upload to S3/LocalStack succeeds
 - [ ] Processing job extracts text (PDF + DOCX fixtures)
@@ -725,6 +797,7 @@ Parallelism: after **002**, Profile work needs auth; Celery **006** can proceed 
 - [ ] Owner can edit summary
 
 **Chat (E3)**
+
 - [ ] Visitor creates session for an owner
 - [ ] Messages persist; AI reply generated from profile context
 - [ ] Streaming or documented sync fallback works
@@ -732,6 +805,7 @@ Parallelism: after **002**, Profile work needs auth; Celery **006** can proceed 
 - [ ] Default system prompt used (Config Service not required)
 
 **Engineering**
+
 - [ ] All Phase 1 PRs merged; CI green on `main`
 - [ ] Migrations from Phase 0 → Phase 1 head apply cleanly on empty DB
 - [ ] DEVELOPMENT.md documents worker, auth headers, S3, LLM mocks
@@ -739,6 +813,7 @@ Parallelism: after **002**, Profile work needs auth; Celery **006** can proceed 
 - [ ] OpenAPI usable for Phase 3 frontend work
 
 **Ready for Phase 2 when:**
+
 - [ ] Auth + Profile + Chat APIs demoable via curl/httpie or Bruno collection
 - [ ] Notification and Config PR breakdown drafted (`docs/phase-2/PR_BREAKDOWN.md`)
 
@@ -788,6 +863,7 @@ curl -X POST localhost:8000/chat/sessions/$SID/messages \
 ## Next Document
 
 When Phase 1 sign-off is near complete:
+
 1. Create `docs/phase-2/PR_BREAKDOWN.md` (Notifications E4, Config E5)
 2. Keep Phase 3 (Frontend) planned against the OpenAPI frozen at Phase 1 end
 
