@@ -1021,8 +1021,9 @@ Blockers or help needed?
 
 ## Next Document
 
-Once Phase 0 is complete and all PRs are merged:
-1. Create `docs/phase-1/PR_BREAKDOWN.md`
+Phase 0 is complete (PRs 001–006 merged). Continue with:
+
+1. ~~Create `docs/phase-1/PR_BREAKDOWN.md`~~ → [phase-1/PR_BREAKDOWN.md](../phase-1/PR_BREAKDOWN.md)
 2. Begin Phase 1: Core Services (Auth → Profile → Chat)
 
 **Estimated Phase 1 Start:** End of Week 2, 2026-07-26
