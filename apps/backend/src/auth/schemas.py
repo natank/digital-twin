@@ -50,3 +50,14 @@ class ForgotPasswordRequest(BaseSchema):
 class ResetPasswordRequest(BaseSchema):
     token: str = Field(min_length=10, max_length=256)
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class OAuthTokenRequest(BaseSchema):
+    """Exchange a provider access token for a Digital Twin JWT.
+
+    The SPA/native client completes the provider OAuth dance and posts the
+    resulting access_token here. Authorization-code server flow can be added
+    later without changing the session issuance path.
+    """
+
+    access_token: str = Field(min_length=8, max_length=4096)
