@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+
+# Run Celery tasks in-process for the whole suite (no Redis broker required).
+os.environ.setdefault("CELERY_TASK_ALWAYS_EAGER", "true")
 
 from src.db.base import Base
 from src.db.session import get_db
@@ -14,6 +19,13 @@ from src.main import app
 
 # Import models so metadata is populated.
 from src.db import models as _models  # noqa: F401
+
+# Ensure Celery app picks up eager mode after env is set, and tasks are imported.
+from src.worker.celery_app import celery_app as _celery_app  # noqa: E402
+from src.worker import tasks as _tasks  # noqa: E402, F401
+
+_celery_app.conf.task_always_eager = True
+_celery_app.conf.task_eager_propagates = True
 
 
 @pytest.fixture()

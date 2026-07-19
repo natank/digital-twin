@@ -75,6 +75,13 @@
         "cwd": "{projectRoot}"
       }
     },
+    "worker": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run celery -A src.worker.celery_app.celery_app worker -l INFO",
+        "cwd": "{projectRoot}"
+      }
+    },
     "migrate": {
       "executor": "@nxlv/python:run-commands",
       "options": {
