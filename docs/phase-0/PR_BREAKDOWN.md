@@ -36,7 +36,7 @@ Week 2:
 | **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 (actual: ~1,115) | 2 | P0 Critical | ✅ Merged ([#4](https://github.com/natank/digital-twin/pull/4)) |
 | **003** | Development Environment | Config, env variables | 150-250 (actual: ~1,280) | 1-2 | P1 High | ✅ Merged ([#5](https://github.com/natank/digital-twin/pull/5)) |
 | **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 (actual: ~500) | 2 | P0 Critical | ✅ Merged ([#6](https://github.com/natank/digital-twin/pull/6)) |
-| **005** | Shared Libraries | Backend/frontend shared code | 200-400 | 2 | P1 High | Not started |
+| **005** | Shared Libraries | Backend/frontend shared code | 200-400 (actual: ~1,400 incl. tests) | 2 | P1 High | 🔄 In review ([#7](https://github.com/natank/digital-twin/pull/7)) |
 | **006** | Development Tooling | Scripts, linting, docs | 300-500 | 1-2 | P2 Medium | Not started |
 
 **Total Scope:** ~1,550-2,650 lines of code/config across 6 PRs (estimate; PR-001's actual diff was larger due to committed `pnpm-lock.yaml`/`poetry.lock` files, which weren't counted in the original estimate)
@@ -101,6 +101,32 @@ Week 2:
 - PR template + CODEOWNERS + README status badges included
 - Branch protection on `main` applied post-merge (required checks + 1 review)
 - Full rationale in `pr-work/PHASE0-004-ci-cd-pipeline/PR_DESCRIPTION.md` (local, gitignored)
+
+### PR-005 Notes (as merged)
+- **Backend package renamed `src` → `backend_shared`.** Both Python projects
+  were generated with a top-level package named `src`, which made the library
+  impossible to import from `apps/backend` (name collision on `sys.path`).
+  The rename was required to meet PR-005's "can be used by other packages"
+  criterion.
+- **`database.py` deliberately NOT in the shared library.** PR-002 already put
+  the session factory in `apps/backend/src/db/session.py` alongside
+  `settings.py`. Moving it would give this library a configuration dependency;
+  it stays stateless-utilities-only. *Open item:* revisit if a second Python
+  deployable (e.g. standalone Celery worker) ever appears.
+- **Deferred to Phase 1/3:** `dependencies.py` (`get_current_user` needs JWT +
+  Owner model + DB session → belongs with the Auth module), `useAuth`/`useApi`
+  hooks (need real API contracts), and `Modal` (no consumer until Phase 3).
+- Fixed a latent tsconfig bug: `frontend-shared` inherited `"lib": ["es2022"]`
+  without `dom`, which fails typecheck once real DOM components exist.
+- **Dockerfile gotcha for future Python libs:** a Poetry path dependency must
+  be copied into the image *and* keep its relative path. The backend
+  Dockerfile now mirrors the monorepo layout
+  (`WORKDIR /app/apps/backend` + shared lib at `/app/libs/backend-shared`).
+  This broke CI on the first push and is easy to hit again when adding a
+  second shared Python library.
+- Nx does not auto-detect Poetry path dependencies — `apps/backend` needs an
+  explicit `implicitDependencies` entry so `nx affected` stays correct.
+- Full rationale in `pr-work/PHASE0-005-shared-libraries/PR_DESCRIPTION.md` (local, gitignored)
 
 ---
 

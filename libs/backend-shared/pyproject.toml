@@ -1,6 +1,6 @@
 [tool.coverage.run]
 branch = true
-source = [ "src" ]
+source = [ "backend_shared" ]
 
 [tool.coverage.report]
 exclude_lines = ['if TYPE_CHECKING:']
@@ -24,10 +24,13 @@ license = 'Proprietary'
 readme = 'README.md'
 
   [[tool.poetry.packages]]
-  include = "src"
+  include = "backend_shared"
 
   [tool.poetry.dependencies]
   python = ">=3.11,<3.15"
+  pydantic = "^2.9.0"
+  cryptography = "^44.0.0"
+  python-json-logger = "^3.2.0"
 
   [tool.poetry.group.dev.dependencies]
   autopep8 = "2.3.1"

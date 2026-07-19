@@ -35,6 +35,7 @@ readme = 'README.md'
   psycopg = {extras = ["binary"], version = "^3.2.3"}
   redis = "^5.2.0"
   pydantic-settings = "^2.6.1"
+  digital-twin-backend-shared = {path = "../../libs/backend-shared", develop = true}
 
   [tool.poetry.group.dev.dependencies]
   autopep8 = "2.3.1"

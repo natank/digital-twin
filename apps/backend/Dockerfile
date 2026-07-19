@@ -12,12 +12,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_CREATE=false \
     POETRY_NO_INTERACTION=1
 
-WORKDIR /app
+# Mirror the monorepo layout so the `digital-twin-backend-shared` path
+# dependency (../../libs/backend-shared) resolves the same way it does locally.
+WORKDIR /app/apps/backend
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/* \
     && pip install "poetry==${POETRY_VERSION}"
+
+# The shared library is a path dependency, so it must be present before
+# `poetry install` resolves the lock file.
+COPY libs/backend-shared /app/libs/backend-shared
 
 # Install dependencies first for better layer caching.
 COPY apps/backend/pyproject.toml apps/backend/poetry.lock apps/backend/README.md ./

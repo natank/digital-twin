@@ -2,7 +2,7 @@
   "name": "libs/backend-shared",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
-  "sourceRoot": "libs/backend-shared/src",
+  "sourceRoot": "libs/backend-shared/backend_shared",
   "targets": {
     "lock": {
       "executor": "@nxlv/python:lock",
