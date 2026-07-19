@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+  # Silence Poetry's keyring prompts in CI
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
+  POETRY_NO_INTERACTION: "1"
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        # packageManager field in package.json pins the version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry poetry-plugin-export
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Python dependencies
+        run: |
+          pnpm nx run apps/backend:install
+          pnpm nx run libs/backend-shared:install
+
+      - name: Lint (flake8 via Nx — Python projects)
+        run: pnpm nx run-many --target=lint --all --parallel=2
+
+      - name: Typecheck (TypeScript projects)
+        run: pnpm nx run-many --target=typecheck --all --parallel=2
+
+      # ESLint / Prettier / Black / MyPy land in Phase 0 PR-006.
+      # Placeholders keep the job graph stable when those configs arrive.
+      - name: Frontend format/lint (placeholder until PR-006)
+        run: |
+          echo "ESLint and Prettier are not configured yet (Phase 0 PR-006)."
+          echo "Typecheck above is the current frontend static-analysis gate."
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry poetry-plugin-export
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Python dependencies
+        run: |
+          pnpm nx run apps/backend:install
+          pnpm nx run libs/backend-shared:install
+
+      - name: Unit tests (all Nx projects)
+        run: pnpm nx run-many --target=test --all --parallel=2
+
+      - name: Env validator unit tests
+        run: |
+          apps/backend/.venv/bin/python -m pytest scripts/tests/test_validate_env.py -v
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage/**
+            reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload coverage to Codecov
+        if: always()
+        continue-on-error: true
+        uses: codecov/codecov-action@v5
+        with:
+          files: |
+            coverage/apps/backend/coverage.xml,
+            coverage/libs/backend-shared/coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry poetry-plugin-export
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Python dependencies
+        run: |
+          pnpm nx run apps/backend:install
+          pnpm nx run libs/backend-shared:install
+
+      - name: Build all projects
+        run: pnpm nx run-many --target=build --all --parallel=2

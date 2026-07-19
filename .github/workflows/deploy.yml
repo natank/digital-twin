@@ -1,0 +1,65 @@
+name: Deploy
+
+# Scaffold for Phase 4. Manual-only until staging/production infrastructure exists.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: Image tag to deploy (git SHA or 'latest')
+        required: true
+        default: latest
+
+# Prevent accidental concurrent deploys to the same environment.
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy-${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Guard — production confirmation
+        if: inputs.environment == 'production'
+        run: |
+          echo "Production deploy is scaffolded only (Phase 4)."
+          echo "Refusing to run real production deploy steps until infrastructure lands."
+
+      - name: Deploy scaffold
+        env:
+          TARGET_ENV: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          cat <<EOF
+          ============================================================
+           Deploy scaffold (Phase 0 / PR-004)
+
+           Environment : ${TARGET_ENV}
+           Image tag   : ${IMAGE_TAG}
+           Commit      : ${GITHUB_SHA}
+
+           Planned steps (not yet implemented):
+             1. Authenticate to container registry
+             2. Pull digital-twin-backend:${IMAGE_TAG}
+             3. Pull digital-twin-frontend:${IMAGE_TAG}
+             4. Apply Kubernetes manifests / update service
+             5. Wait for rollout health checks
+             6. Smoke-test /health and frontend root
+
+           This workflow is intentionally a no-op until Phase 4.
+          ============================================================
+          EOF
+
+      - name: Placeholder success
+        run: echo "Scaffold complete — no resources were modified."

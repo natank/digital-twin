@@ -1,5 +1,8 @@
 # Digital Twin AI Assistant Platform
 
+[![CI](https://github.com/natank/digital-twin/actions/workflows/ci.yml/badge.svg)](https://github.com/natank/digital-twin/actions/workflows/ci.yml)
+[![Build](https://github.com/natank/digital-twin/actions/workflows/build.yml/badge.svg)](https://github.com/natank/digital-twin/actions/workflows/build.yml)
+
 A 24/7 AI-powered digital twin that represents professionals on their websites, engaging visitors and answering career-related questions.
 
 ## Overview
@@ -170,6 +173,27 @@ pnpm nx run apps/backend:seed
 # Dependency graph
 pnpm nx graph
 ```
+
+## CI/CD
+
+GitHub Actions workflows live under `.github/workflows/`:
+
+| Workflow | File | When | Purpose |
+|----------|------|------|---------|
+| **CI** | `ci.yml` | PR + push to `main` | Lint, typecheck, unit tests, Nx build |
+| **Build** | `build.yml` | PR + push to `main` | Docker image builds (backend + frontend) |
+| **Deploy** | `deploy.yml` | Manual (`workflow_dispatch`) | Staging/production scaffold (Phase 4) |
+
+```bash
+# Local parity with CI quality gates
+pnpm nx run-many --target=lint,test,typecheck,build --all
+
+# Build container images (from monorepo root)
+docker build -f apps/backend/Dockerfile -t digital-twin-backend .
+docker build -f apps/frontend/Dockerfile -t digital-twin-frontend .
+```
+
+Status checks expected on `main` (branch protection): `quality`, `test`, `build`, `docker-backend`, `docker-frontend`.
 
 ## Architecture
 
