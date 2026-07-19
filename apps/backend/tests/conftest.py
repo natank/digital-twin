@@ -1,1 +1,59 @@
-"""Unit tests configuration module."""
+"""Shared pytest fixtures for the backend test suite."""
+
+from __future__ import annotations
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from src.db.base import Base
+from src.db.session import get_db
+from src.main import app
+
+# Import models so metadata is populated.
+from src.db import models as _models  # noqa: F401
+
+
+@pytest.fixture()
+def db_session() -> Session:
+    """In-memory SQLite session with the full ORM schema."""
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
+    # SQLite + Postgres UUID: store UUIDs as strings.
+    @event.listens_for(engine, "connect")
+    def _set_sqlite_pragma(dbapi_connection, connection_record):  # type: ignore[no-untyped-def]
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    session = factory()
+    try:
+        yield session
+    finally:
+        session.close()
+        Base.metadata.drop_all(engine)
+        engine.dispose()
+
+
+@pytest.fixture()
+def client(db_session: Session) -> TestClient:
+    """HTTP client with get_db overridden to the in-memory session."""
+
+    def _override_get_db():  # type: ignore[no-untyped-def]
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = _override_get_db
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
