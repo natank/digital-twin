@@ -58,10 +58,10 @@ Buffer (end of Week 8 / start of Phase 2 planning):
 | **008** | CV upload + object storage           | E2   | 5    | 350–500    | P0       | ✅ Merged ([#17](https://github.com/natank/digital-twin/pull/17)) |
 | **009** | CV extraction + job pipeline         | E2   | 5–6  | 400–600    | P0       | ✅ Merged ([#18](https://github.com/natank/digital-twin/pull/18)) |
 | **010** | LLM profile summary                  | E2   | 6    | 400–600    | P0       | ✅ Merged ([#19](https://github.com/natank/digital-twin/pull/19)) |
-| **011** | Chat models + sessions               | E3   | 7    | 350–500    | P0       | Not started                                                       |
-| **012** | Chat messages + LLM replies          | E3   | 7–8  | 450–700    | P0       | Not started                                                       |
-| **013** | Chat streaming + boundaries          | E3   | 8    | 350–550    | P1       | Not started                                                       |
-| **014** | Integration tests & API polish       | —    | 8    | 300–500    | P1       | Not started                                                       |
+| **011** | Chat models + sessions               | E3   | 7    | 350–500    | P0       | ✅ In PR (weeks 7–8 E3)                                           |
+| **012** | Chat messages + LLM replies          | E3   | 7–8  | 450–700    | P0       | ✅ In PR (weeks 7–8 E3)                                           |
+| **013** | Chat streaming + boundaries          | E3   | 8    | 350–550    | P1       | ✅ In PR (weeks 7–8 E3)                                           |
+| **014** | Integration tests & API polish       | —    | 8    | 300–500    | P1       | ✅ In PR (weeks 7–8 E3)                                           |
 
 **Total scope (estimate):** ~4,500–7,000 lines across 14 PRs (application code + migrations + tests; lockfile churn excluded).
 

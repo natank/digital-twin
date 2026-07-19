@@ -126,3 +126,78 @@ class CVProcessingJob(Base):
     )
 
     owner: Mapped["Owner"] = relationship()
+
+
+class ChatSession(Base):
+    """Anonymous visitor chat session bound to an owner's digital twin."""
+
+    __tablename__ = "chat_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Public key returned to clients (distinct from internal UUID PK).
+    public_id: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("owners.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    visitor_ip_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    owner: Mapped["Owner"] = relationship()
+    messages: Mapped[list["ChatMessage"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="ChatMessage.created_at",
+    )
+    context: Mapped["ConversationContext | None"] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+class ChatMessage(Base):
+    """A single visitor or AI message within a chat session."""
+
+    __tablename__ = "chat_messages"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("chat_sessions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    # "visitor" | "ai"
+    sender: Mapped[str] = mapped_column(String(16), nullable=False)
+    content: Mapped[str] = mapped_column(String, nullable=False)
+    tokens_used: Mapped[int | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+
+    session: Mapped["ChatSession"] = relationship(back_populates="messages")
+
+
+class ConversationContext(Base):
+    """Lightweight session metadata for boundaries and flagging (PR-013)."""
+
+    __tablename__ = "conversation_contexts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("chat_sessions.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+    violation_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    flagged: Mapped[bool] = mapped_column(nullable=False, default=False)
+    flag_reason: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    session: Mapped["ChatSession"] = relationship(back_populates="context")

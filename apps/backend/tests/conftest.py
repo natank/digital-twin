@@ -31,7 +31,7 @@ _celery_app.conf.task_eager_propagates = True
 @pytest.fixture(autouse=True)
 def _default_llm_mock() -> None:  # type: ignore[misc]
     """Prevent live Anthropic calls in the suite; tests may override."""
-    from src.llm.claude import set_profile_summary_generator
+    from src.llm.claude import set_chat_reply_generator, set_profile_summary_generator
 
     def _default(cv_text: str) -> dict:
         return {
@@ -46,9 +46,15 @@ def _default_llm_mock() -> None:  # type: ignore[misc]
             "experience_years": None,
         }
 
+    def _chat_default(system_prompt: str, messages: list) -> tuple[str, int | None]:
+        last = messages[-1]["content"] if messages else ""
+        return (f"Mock twin reply about: {last[:80]}", 12)
+
     set_profile_summary_generator(_default)
+    set_chat_reply_generator(_chat_default)
     yield
     set_profile_summary_generator(None)
+    set_chat_reply_generator(None)
 
 
 @pytest.fixture()

@@ -201,3 +201,91 @@ def generate_profile_summary(
     raw_text = _call_anthropic(text, cfg)
     data = _parse_json_object(raw_text)
     return _normalize_summary(data)
+
+
+# ---------------------------------------------------------------------------
+# Chat reply generation (digital twin)
+# ---------------------------------------------------------------------------
+
+ChatReplyGenerator = Callable[[str, list[dict[str, str]]], tuple[str, int | None]]
+
+_chat_override: ChatReplyGenerator | None = None
+
+
+def set_chat_reply_generator(fn: ChatReplyGenerator | None) -> None:
+    """Install a test double for chat replies (None restores default)."""
+    global _chat_override
+    _chat_override = fn
+
+
+def _call_anthropic_chat(
+    *,
+    system_prompt: str,
+    messages: list[dict[str, str]],
+    settings: Settings,
+) -> tuple[str, int | None]:
+    api_key = (settings.claude_api_key or "").strip()
+    if not api_key or api_key in {"sk-test", "test", "changeme"}:
+        raise ExternalServiceError(
+            "Claude API is not configured",
+            details={"hint": "Set CLAUDE_API_KEY for live chat replies"},
+        )
+    try:
+        import anthropic
+    except ImportError as exc:  # pragma: no cover
+        raise ExternalServiceError("anthropic package is not installed") from exc
+
+    client = anthropic.Anthropic(api_key=api_key, timeout=60.0)
+    # Anthropic requires alternating user/assistant; ensure last is user.
+    # Cast for mypy: SDK MessageParam is a TypedDict union we build as plain dicts.
+    api_messages: list[Any] = [{"role": m["role"], "content": m["content"]} for m in messages]
+    try:
+        message = client.messages.create(
+            model=settings.claude_model,
+            max_tokens=1024,
+            system=system_prompt,
+            messages=api_messages,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Anthropic chat API call failed")
+        raise ExternalServiceError(
+            "Failed to generate chat reply via Claude",
+            details={"reason": str(exc)[:200]},
+        ) from exc
+
+    parts: list[str] = []
+    for block in message.content:
+        text = getattr(block, "text", None)
+        if text:
+            parts.append(text)
+    if not parts:
+        raise ExternalServiceError("Claude returned an empty chat response")
+
+    tokens: int | None = None
+    usage = getattr(message, "usage", None)
+    if usage is not None:
+        inp = getattr(usage, "input_tokens", 0) or 0
+        out = getattr(usage, "output_tokens", 0) or 0
+        tokens = int(inp) + int(out)
+    return "\n".join(parts), tokens
+
+
+def generate_chat_reply(
+    *,
+    system_prompt: str,
+    messages: list[dict[str, str]],
+    settings: Settings | None = None,
+) -> tuple[str, int | None]:
+    """Generate a twin reply. Returns (text, tokens_used|None)."""
+    if not messages:
+        raise ValidationError("At least one message is required for chat")
+
+    if _chat_override is not None:
+        return _chat_override(system_prompt, messages)
+
+    cfg = settings or get_settings()
+    return _call_anthropic_chat(
+        system_prompt=system_prompt,
+        messages=messages,
+        settings=cfg,
+    )
