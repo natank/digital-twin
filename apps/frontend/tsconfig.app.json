@@ -15,6 +15,11 @@
     ],
     "rootDir": "src"
   },
+  "references": [
+    {
+      "path": "../../libs/frontend-shared/tsconfig.lib.json"
+    }
+  ],
   "exclude": [
     "out-tsc",
     "dist",
