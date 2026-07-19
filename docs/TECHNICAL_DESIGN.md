@@ -21,35 +21,36 @@
 
 ## Architecture Overview
 
-### Architectural Pattern: Microservices with Monolithic Database
+### Architectural Pattern: Modular Monolith
 
-The system follows a microservices architecture with independent services communicating via REST APIs and message queues, backed by a single normalized database.
+The backend is a single FastAPI application organized into domain modules (auth, profiles, chat, analytics, notifications, config). Each module owns its routes, models, and schemas, communicating in-process via direct calls and asynchronously via Celery tasks over Redis. This keeps deployment simple (one container, one port) while preserving clean module boundaries — modules can be extracted into separate services later if scale demands it.
+
+**Note:** Throughout this document, "service" refers to a domain module within the single backend application, not an independently deployed process.
 
 ```
 ┌────────────────────────────────────────────────────────────┐
 │                     PRESENTATION LAYER                     │
-│  (React Frontend / Next.js - Single Page Application)     │
+│  (React Frontend / Vite - Single Page Application)         │
 └──────────────────────┬─────────────────────────────────────┘
                        │ HTTP/HTTPS
                        ↓
 ┌────────────────────────────────────────────────────────────┐
-│                    API GATEWAY LAYER                        │
-│  (Express.js / FastAPI - Rate Limiting, Auth, Routing)    │
-└──────┬──────────┬──────────┬──────────┬──────────┬─────────┘
-       │          │          │          │          │
-       ↓          ↓          ↓          ↓          ↓
-┌────────────┐ ┌────────┐ ┌───────┐ ┌──────────┐ ┌──────┐
-│    AUTH    │ │PROFILE │ │ CHAT  │ │ANALYTICS │ │CONFIG│
-│  SERVICE   │ │SERVICE │ │SERVICE│ │ SERVICE  │ │SERV. │
-│(Port 3001) │ │(3002)  │ │(3003) │ │ (3004)   │ │(3005)│
-└─────┬──────┘ └────┬───┘ └───┬───┘ └────┬─────┘ └──┬───┘
-      │             │         │          │          │
-      └─────────────┼─────────┼──────────┼──────────┘
+│              BACKEND APPLICATION (FastAPI, :8000)          │
+│         Middleware: Rate Limiting, Auth, CORS, Logging     │
+├──────┬──────────┬──────────┬──────────┬──────────┬─────────┤
+│      │          │          │          │          │         │
+│ ┌────▼─────┐ ┌──▼─────┐ ┌──▼────┐ ┌──▼───────┐ ┌▼──────┐  │
+│ │   AUTH   │ │PROFILE │ │ CHAT  │ │ANALYTICS │ │CONFIG │  │
+│ │  MODULE  │ │MODULE  │ │MODULE │ │ MODULE   │ │MODULE │  │
+│ └────┬─────┘ └────┬───┘ └───┬───┘ └────┬─────┘ └──┬────┘  │
+│      │            │         │          │          │        │
+└──────┴────────────┼─────────┼──────────┼──────────┴────────┘
                     │         │          │
                     ↓         ↓          ↓
              ┌──────────────────────────────┐
-             │   MESSAGE QUEUE (Redis)      │
-             │  (Event Publishing/Consume)  │
+             │  TASK QUEUE (Celery + Redis) │
+             │  (Async jobs: CV processing, │
+             │   notifications, cleanup)    │
              └─────────────┬────────────────┘
                            │
          ┌─────────────────┼──────────────────┐
@@ -68,10 +69,10 @@ The system follows a microservices architecture with independent services commun
 
 ### Key Design Principles
 
-1. **Separation of Concerns** — Each service has a single responsibility
-2. **Stateless Services** — Services can be scaled horizontally
+1. **Separation of Concerns** — Each module has a single responsibility
+2. **Stateless Application** — Backend replicas can be scaled horizontally (state lives in Postgres/Redis)
 3. **Database Normalization** — Single source of truth in database
-4. **Event-Driven** — Services communicate via message queue
+4. **Async Where It Matters** — Slow work (CV processing, notifications) runs via Celery tasks
 5. **API-First** — All interactions through well-defined APIs
 6. **Security by Default** — Encryption, authentication, authorization at every layer
 
@@ -110,13 +111,14 @@ The system follows a microservices architecture with independent services commun
 |-----------|-----------|--------|
 | **LLM Provider** | Claude API | High-quality outputs, cost-effective, safety features |
 | **Embeddings** | Sentence Transformers | Local embeddings for relevance scoring |
-| **Document Processing** | PyPDF2 + python-docx | CV parsing and text extraction |
+| **Document Processing** | pypdf + python-docx | CV parsing and text extraction (pypdf is the maintained successor to PyPDF2) |
 
 ### Notifications
 | Component | Technology | Reason |
 |-----------|-----------|--------|
 | **Push Notifications** | Pushover API | Reliable, simple, cross-platform (iOS/Android/Desktop) |
 | **Notification Client** | httpx | Async HTTP client for Pushover API calls |
+| **Transactional Email** | SendGrid (or SES) | Required for auth flows: email verification, password reset (E1) |
 
 ### DevOps & Infrastructure
 | Component | Technology | Reason |
@@ -240,7 +242,7 @@ class Profiles(Base):
     
 class CVProcessingJobs(Base):
     id: UUID
-    user_id: UUID (foreign key)
+    owner_id: UUID (foreign key)
     cv_file_path: str
     status: Enum["pending", "processing", "completed", "failed"]
     extracted_text: str (nullable)
@@ -253,8 +255,8 @@ class CVProcessingJobs(Base):
 ```
 S3 Structure:
 s3://digital-twin-files/
-├── cv-uploads/{user_id}/{filename}  (encrypted)
-├── cv-extracted/{user_id}/text.txt  (encrypted)
+├── cv-uploads/{owner_id}/{filename}  (encrypted)
+├── cv-extracted/{owner_id}/text.txt  (encrypted)
 └── temp/{job_id}/                   (cleanup after 24h)
 ```
 
@@ -262,7 +264,7 @@ s3://digital-twin-files/
 ```python
 # CV processing job via Celery
 @celery_app.task
-def process_cv(cv_file_path: str, user_id: str):
+def process_cv(cv_file_path: str, owner_id: str):
     # 1. Extract text
     # 2. Clean text
     # 3. Generate summary via LLM
@@ -577,17 +579,17 @@ class PushoverNotification:
             logger.error(f"Pushover API error: {e}")
             raise
 
-async def send_notification(user_id: str, notification_type: str, data: dict):
+async def send_notification(owner_id: str, notification_type: str, data: dict):
     """Send notification via Pushover"""
     
     # Get Pushover config
     config = db.query(PushoverConfig).filter(
-        PushoverConfig.user_id == user_id,
+        PushoverConfig.owner_id == owner_id,
         PushoverConfig.enabled == True
     ).first()
     
     if not config:
-        logger.warning(f"No Pushover config for user {user_id}")
+        logger.warning(f"No Pushover config for owner {owner_id}")
         return
     
     # Decrypt API token and user key
@@ -614,7 +616,7 @@ async def send_notification(user_id: str, notification_type: str, data: dict):
         
         # Save notification record
         notification = Notification(
-            user_id=user_id,
+            owner_id=owner_id,
             type=notification_type,
             title=title,
             message=message,
@@ -630,7 +632,7 @@ async def send_notification(user_id: str, notification_type: str, data: dict):
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
         notification = Notification(
-            user_id=user_id,
+            owner_id=owner_id,
             type=notification_type,
             title=title,
             message=message,
@@ -696,7 +698,7 @@ def build_notification_content(notification_type: str, data: dict) -> tuple:
 async def notify_on_new_message(event):
     """Send notification when new message received"""
     await send_notification(
-        user_id=event.owner_id,
+        owner_id=event.owner_id,
         notification_type="conversation_started",
         data={
             "session_id": event.session_id,
@@ -709,7 +711,7 @@ async def notify_on_new_message(event):
 async def notify_on_high_intent(event):
     """Send HIGH priority notification for potential leads"""
     await send_notification(
-        user_id=event.owner_id,
+        owner_id=event.owner_id,
         notification_type="high_intent_detected",
         data={
             "session_id": event.session_id,
@@ -728,12 +730,12 @@ def retry_send_notification(self, notification_id: str):
             db.commit()
             return
         
-        # Attempt resend
-        await send_notification(
-            user_id=notification.user_id,
+        # Attempt resend (Celery tasks are sync; run the async sender)
+        asyncio.run(send_notification(
+            owner_id=notification.owner_id,
             notification_type=notification.type,
             data=notification.data
-        )
+        ))
         
         notification.retry_count += 1
         db.commit()
@@ -757,7 +759,7 @@ async def setup_pushover(request: Request, config: PushoverConfigRequest):
         "sound": "pushover"
     }
     """
-    user_id = request.user_id
+    owner_id = request.owner_id
     
     # Verify Pushover credentials with test notification
     pushover = PushoverNotification(PUSHOVER_APP_TOKEN)
@@ -776,7 +778,7 @@ async def setup_pushover(request: Request, config: PushoverConfigRequest):
     
     # Save config (encrypted)
     db_config = PushoverConfig(
-        user_id=user_id,
+        owner_id=owner_id,
         pushover_user_key=encrypt_field(config.pushover_user_key),
         pushover_api_token=encrypt_field(PUSHOVER_APP_TOKEN),
         device=config.device,
@@ -1217,7 +1219,7 @@ class AuditLogs(Base):
 @event_listener("*")
 def log_audit(event):
     AuditLogs.create(
-        user_id=event.user_id,
+        owner_id=event.owner_id,
         action=event.action,
         resource_type=event.resource_type,
         ...
@@ -1299,7 +1301,7 @@ services:
       - postgres
       - redis
     environment:
-      DATABASE_URL: postgresql://user:password@postgres/digital_twin_dev
+      DATABASE_URL: postgresql://postgres:devpassword@postgres/digital_twin_dev
       REDIS_URL: redis://redis:6379
       PYTHONUNBUFFERED: 1
     volumes:
@@ -1822,8 +1824,8 @@ S3_BUCKET=digital-twin-files
 S3_REGION=us-east-1
 AWS_ACCESS_KEY_ID=xxx
 AWS_SECRET_ACCESS_KEY=xxx
-SENDGRID_API_KEY=xxx
-SLACK_BOT_TOKEN=xxx
+PUSHOVER_APP_TOKEN=xxx
+ENCRYPTION_KEY=xxx  # Fernet key for field-level encryption
 GOOGLE_OAUTH_CLIENT_ID=xxx
 GITHUB_OAUTH_CLIENT_ID=xxx
 ```
@@ -1849,8 +1851,8 @@ GITHUB_OAUTH_CLIENT_ID=xxx
 npx create-nx-workspace digital-twin --packageManager=pnpm
 
 # Add Python backend
-nx add @nxext/python
-nx generate @nxext/python:app backend
+nx add @nxlv/python
+nx generate @nxlv/python:app backend
 
 # Add React frontend
 nx add @nx/react

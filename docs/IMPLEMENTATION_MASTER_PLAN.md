@@ -418,7 +418,8 @@ Phase 2 (Supporting Services)
 │   └─ Report generation
 
 Cross-Service Dependencies:
-- Chat Service requires Config Service (for prompts)
+- Chat Service uses a built-in default system prompt until Config Service
+  (Week 10) lands; Config then supplies owner-customized prompts
 - Chat Service triggers Notification Service (events)
 - All services require Auth Service (protected routes)
 - All services may access Profile Service (owner context)
@@ -1358,7 +1359,7 @@ Before merging:
 Merge strategy:
 ├─ Use "Squash and merge" for small PRs (<300 lines)
 ├─ Use "Create a merge commit" for larger PRs
-└─ NEVER use "Rebase and merge" (maintains commit history)
+└─ Avoid "Rebase and merge" (rewrites commit SHAs onto main; merge/squash keep a clearer record of what landed together)
 
 Commit message after merge:
 {PR-Title} ({PR-Number})
