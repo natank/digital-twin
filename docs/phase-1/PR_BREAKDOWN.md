@@ -53,11 +53,11 @@ Buffer (end of Week 8 / start of Phase 2 planning):
 | **003** | Auth: session lifecycle + rate limit | E1   | 3–4  | 250–400    | P0       | ✅ Merged ([#12](https://github.com/natank/digital-twin/pull/12)) |
 | **004** | Auth: verify email + password reset  | E1   | 4    | 350–500    | P1       | ✅ Merged ([#13](https://github.com/natank/digital-twin/pull/13)) |
 | **005** | Auth: OAuth skeleton                 | E1   | 4    | 200–350    | P2       | ✅ Merged ([#14](https://github.com/natank/digital-twin/pull/14)) |
-| **006** | Celery worker infrastructure         | —    | 5    | 250–400    | P0       | Not started |
-| **007** | Profile CRUD API                     | E2   | 5    | 300–450    | P0       | Not started |
-| **008** | CV upload + object storage           | E2   | 5    | 350–500    | P0       | Not started |
-| **009** | CV extraction + job pipeline         | E2   | 5–6  | 400–600    | P0       | Not started |
-| **010** | LLM profile summary                  | E2   | 6    | 400–600    | P0       | Not started |
+| **006** | Celery worker infrastructure         | —    | 5    | 250–400    | P0       | ✅ Merged ([#15](https://github.com/natank/digital-twin/pull/15)) |
+| **007** | Profile CRUD API                     | E2   | 5    | 300–450    | P0       | ✅ Merged ([#16](https://github.com/natank/digital-twin/pull/16)) |
+| **008** | CV upload + object storage           | E2   | 5    | 350–500    | P0       | ✅ Merged ([#17](https://github.com/natank/digital-twin/pull/17)) |
+| **009** | CV extraction + job pipeline         | E2   | 5–6  | 400–600    | P0       | ✅ Merged ([#18](https://github.com/natank/digital-twin/pull/18)) |
+| **010** | LLM profile summary                  | E2   | 6    | 400–600    | P0       | ✅ Merged ([#19](https://github.com/natank/digital-twin/pull/19)) |
 | **011** | Chat models + sessions               | E3   | 7    | 350–500    | P0       | Not started |
 | **012** | Chat messages + LLM replies          | E3   | 7–8  | 450–700    | P0       | Not started |
 | **013** | Chat streaming + boundaries          | E3   | 8    | 350–550    | P1       | Not started |
