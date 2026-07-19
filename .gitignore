@@ -36,3 +36,21 @@ htmlcov/
 pr-work/
 pr-archive/
 *.local.md
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+
+# Node
+node_modules/
+
+# Nx
+.nx/cache
+.nx/workspace-data
+*.tsbuildinfo
+
+# Test/coverage reports
+coverage/
+reports/
+
+# TypeScript build output
+out-tsc/
