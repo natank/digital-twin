@@ -12,13 +12,16 @@ from src.api.deps import get_current_owner, get_db
 from src.db.models import Owner
 from src.profiles.schemas import (
     CVDownloadResponse,
+    CVJobResponse,
     CVUploadResponse,
     ProfileResponse,
     ProfileUpdateRequest,
     PublicProfileResponse,
 )
 from src.profiles.service import (
+    enqueue_cv_processing,
     get_cv_download_url,
+    get_cv_job,
     get_profile_for_owner,
     get_public_profile,
     profile_to_response_dict,
@@ -101,6 +104,47 @@ def get_my_cv(
     """Return a presigned URL to download the owner's current CV."""
     payload = get_cv_download_url(db, owner)
     return ApiResponse.ok(CVDownloadResponse.model_validate(payload))
+
+
+@router.post("/me/process-cv", response_model=ApiResponse[CVJobResponse], status_code=202)
+def process_my_cv(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[CVJobResponse]:
+    """Enqueue async CV text extraction for the owner's uploaded CV."""
+    job = enqueue_cv_processing(db, owner, generate_summary=False)
+    return ApiResponse.ok(
+        CVJobResponse(
+            id=job.id,
+            owner_id=job.owner_id,
+            status=job.status,
+            cv_file_path=job.cv_file_path,
+            error_message=job.error_message,
+            created_at=job.created_at,
+            updated_at=job.updated_at,
+        )
+    )
+
+
+@router.get("/me/cv/jobs/{job_id}", response_model=ApiResponse[CVJobResponse])
+def get_my_cv_job(
+    job_id: uuid.UUID,
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[CVJobResponse]:
+    """Return status for a CV processing job owned by the current user."""
+    job = get_cv_job(db, owner, job_id)
+    return ApiResponse.ok(
+        CVJobResponse(
+            id=job.id,
+            owner_id=job.owner_id,
+            status=job.status,
+            cv_file_path=job.cv_file_path,
+            error_message=job.error_message,
+            created_at=job.created_at,
+            updated_at=job.updated_at,
+        )
+    )
 
 
 @router.get("/{owner_id}", response_model=ApiResponse[PublicProfileResponse])

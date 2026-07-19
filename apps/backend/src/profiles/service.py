@@ -8,7 +8,7 @@ from typing import Any, BinaryIO
 from backend_shared.exceptions import NotFoundError, ValidationError
 from sqlalchemy.orm import Session
 
-from src.db.models import Owner, Profile
+from src.db.models import CVProcessingJob, Owner, Profile
 from src.profiles.storage import (
     StoredObject,
     delete_object,
@@ -211,3 +211,48 @@ def get_cv_download_url(
         "expires_in_seconds": expires_in,
         "cv_file_path": profile.cv_file_path,
     }
+
+
+def enqueue_cv_processing(
+    db: Session,
+    owner: Owner,
+    *,
+    generate_summary: bool = False,
+) -> CVProcessingJob:
+    """Create a CVProcessingJob and enqueue Celery task ``tasks.process_cv``."""
+    profile = get_or_create_profile(db, owner)
+    if not profile.cv_file_path:
+        raise ValidationError(
+            "Upload a CV before processing",
+            details={"field": "cv"},
+        )
+
+    job = CVProcessingJob(
+        owner_id=owner.id,
+        cv_file_path=profile.cv_file_path,
+        status="pending",
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
+    from src.worker.tasks.cv import process_cv
+
+    process_cv.delay(str(job.id), generate_summary=generate_summary)
+    # Eager tasks commit in a separate SessionLocal; drop identity map so
+    # subsequent reads see updated status/extracted_text.
+    db.expire_all()
+    job = db.query(CVProcessingJob).filter(CVProcessingJob.id == job.id).one()
+    return job
+
+
+def get_cv_job(db: Session, owner: Owner, job_id: uuid.UUID) -> CVProcessingJob:
+    """Return a processing job owned by the current owner."""
+    job = (
+        db.query(CVProcessingJob)
+        .filter(CVProcessingJob.id == job_id, CVProcessingJob.owner_id == owner.id)
+        .first()
+    )
+    if job is None:
+        raise NotFoundError("CV processing job not found")
+    return job
