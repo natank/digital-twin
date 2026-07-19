@@ -34,7 +34,7 @@ Week 2:
 |------|-------|-------|-------|------|----------|--------|
 | **001** | Nx Monorepo Initialization | Build system setup | 200-400 (actual: ~11,800, mostly lockfiles) | 2 | P0 Critical | ✅ Merged ([#3](https://github.com/natank/digital-twin/pull/3)) |
 | **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 (actual: ~1,115) | 2 | P0 Critical | ✅ Merged ([#4](https://github.com/natank/digital-twin/pull/4)) |
-| **003** | Development Environment | Config, env variables | 150-250 | 1-2 | P1 High | Not started |
+| **003** | Development Environment | Config, env variables | 150-250 (actual: ~1,280) | 1-2 | P1 High | ✅ Merged ([#5](https://github.com/natank/digital-twin/pull/5)) |
 | **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 | 2 | P0 Critical | Not started |
 | **005** | Shared Libraries | Backend/frontend shared code | 200-400 | 2 | P1 High | Not started |
 | **006** | Development Tooling | Scripts, linting, docs | 300-500 | 1-2 | P2 Medium | Not started |
@@ -61,11 +61,30 @@ Week 2:
   migration + seed from an empty database) in addition to the standard
   upgrade/downgrade/upgrade round-trip
 - `.env.example` added at repo root; full `.env.local` tooling/validation
-  is still PR-003 scope
+  completed in PR-003
 - Dev machine runs Podman (not Docker Desktop) via `docker`/`docker
   compose` CLI shims — transparent to `docker-compose.yml` itself, but
   worth a callout in PR-006's DEVELOPMENT.md
 - Full rationale in `pr-work/PHASE0-002-database-infrastructure/PR_DESCRIPTION.md` (local, gitignored)
+
+### PR-003 Notes (as merged)
+- Dev scripts live at repo-root `scripts/` (not `tools/scripts/`) to match
+  the success criterion `./scripts/start-dev.sh`; `tools/scripts/` remains
+  a placeholder for future generators
+- `start-dev.sh` owns infrastructure only (env + compose + migrate); app
+  servers stay as separate `pnpm nx serve` processes so log streams stay
+  readable
+- Compose CLI detection supports `docker compose`, `docker-compose`, and
+  `podman-compose` (same Podman-shim environment as PR-002)
+- Backend `Settings` loads monorepo-root `.env.local` (not CWD-relative),
+  fixing migrate/serve when run from `apps/backend`
+- VS Code settings use modern Black/Prettier extensions and point the
+  interpreter at `apps/backend/.venv` (Poetry in-project venv)
+- `.vscode/` was previously fully gitignored; shared
+  settings/extensions/launch are now committed, personal state ignored
+- Full lint/format tool configs (flake8, black, mypy, eslint, prettier,
+  pre-commit) remain PR-006 scope
+- Full rationale in `pr-work/PHASE0-003-development-environment/PR_DESCRIPTION.md` (local, gitignored)
 
 ---
 
