@@ -48,11 +48,11 @@ Buffer (end of Week 8 / start of Phase 2 planning):
 
 | PR #    | Title                                | Epic | Week | Est. lines | Priority | Status      |
 | ------- | ------------------------------------ | ---- | ---- | ---------- | -------- | ----------- |
-| **001** | API foundation                       | —    | 3    | 250–400    | P0       | Not started |
-| **002** | Auth: register / login / me          | E1   | 3    | 400–600    | P0       | Not started |
-| **003** | Auth: session lifecycle + rate limit | E1   | 3–4  | 250–400    | P0       | Not started |
-| **004** | Auth: verify email + password reset  | E1   | 4    | 350–500    | P1       | Not started |
-| **005** | Auth: OAuth skeleton                 | E1   | 4    | 200–350    | P2       | Not started |
+| **001** | API foundation                       | —    | 3    | 250–400    | P0       | ✅ Merged ([#10](https://github.com/natank/digital-twin/pull/10)) |
+| **002** | Auth: register / login / me          | E1   | 3    | 400–600    | P0       | ✅ Merged ([#11](https://github.com/natank/digital-twin/pull/11)) |
+| **003** | Auth: session lifecycle + rate limit | E1   | 3–4  | 250–400    | P0       | ✅ Merged ([#12](https://github.com/natank/digital-twin/pull/12)) |
+| **004** | Auth: verify email + password reset  | E1   | 4    | 350–500    | P1       | ✅ Merged ([#13](https://github.com/natank/digital-twin/pull/13)) |
+| **005** | Auth: OAuth skeleton                 | E1   | 4    | 200–350    | P2       | ✅ Merged ([#14](https://github.com/natank/digital-twin/pull/14)) |
 | **006** | Celery worker infrastructure         | —    | 5    | 250–400    | P0       | Not started |
 | **007** | Profile CRUD API                     | E2   | 5    | 300–450    | P0       | Not started |
 | **008** | CV upload + object storage           | E2   | 5    | 350–500    | P0       | Not started |
