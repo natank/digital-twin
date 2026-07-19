@@ -118,12 +118,37 @@ curl -X POST localhost:8000/profiles/me/process-cv \
 curl localhost:8000/profiles/me/summary -H "Authorization: Bearer $TOKEN"
 ```
 
-### Claude / LLM (profile summary)
+### Claude / LLM (profile summary + chat)
 
-Set a real `CLAUDE_API_KEY` for live summary generation. Unit tests **never**
-call Anthropic — they install a mock via `set_profile_summary_generator`
-(autouse in `conftest.py`). Without a key, process-cv still extracts text and
-records a summary failure message on the job.
+Set a real `CLAUDE_API_KEY` for live summary generation and chat replies.
+Unit tests **never** call Anthropic — they install mocks via
+`set_profile_summary_generator` and `set_chat_reply_generator` (autouse in
+`conftest.py`). Without a key, process-cv still extracts text and records a
+summary failure message on the job; chat returns a safe fallback reply.
+
+### Chat API (visitor twin)
+
+No auth required for visitors. Sessions expire after
+`CHAT_SESSION_TTL_MINUTES` (default 30) of inactivity. Rate limit:
+`CHAT_RATE_LIMIT_PER_HOUR` requests per session (default 50/hour).
+
+```bash
+# owner_id from seed or /auth/me after login
+SID=$(curl -s -X POST localhost:8000/chat/sessions \
+  -H 'Content-Type: application/json' \
+  -d "{\"owner_id\":\"$OWNER_ID\"}" | jq -r .data.session_id)
+
+curl -s -X POST "localhost:8000/chat/sessions/$SID/messages" \
+  -H 'Content-Type: application/json' \
+  -d '{"content":"What is your background?"}' | jq .
+
+# SSE stream (POST preferred)
+curl -N -X POST "localhost:8000/chat/sse/$SID/stream" \
+  -H 'Content-Type: application/json' \
+  -d '{"content":"What skills do you have?"}'
+```
+
+WebSocket chat is deferred; SSE is the MVP streaming path.
 
 ### Database helpers
 

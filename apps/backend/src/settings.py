@@ -77,6 +77,12 @@ class Settings(BaseSettings):
     # CELERY_TASK_ALWAYS_EAGER=true in CI rather than shipping True defaults.
     celery_task_always_eager: bool = False
 
+    # Chat (visitor twin sessions)
+    chat_session_ttl_minutes: int = 30
+    chat_rate_limit_per_hour: int = 50
+    chat_rate_limit_window_seconds: int = 3600
+    chat_sse_chunk_size: int = 48
+
     def cors_origin_list(self) -> list[str]:
         """Parse ``cors_origins`` into a list of non-empty origin strings."""
         return [part.strip() for part in self.cors_origins.split(",") if part.strip()]
