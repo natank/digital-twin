@@ -1,24 +1,28 @@
-"""Profile HTTP routes — owner-scoped CRUD and public limited view."""
+"""Profile HTTP routes — owner-scoped CRUD, CV upload, public limited view."""
 
 from __future__ import annotations
 
 import uuid
 
 from backend_shared.schemas import ApiResponse
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 
 from src.api.deps import get_current_owner, get_db
 from src.db.models import Owner
 from src.profiles.schemas import (
+    CVDownloadResponse,
+    CVUploadResponse,
     ProfileResponse,
     ProfileUpdateRequest,
     PublicProfileResponse,
 )
 from src.profiles.service import (
+    get_cv_download_url,
     get_profile_for_owner,
     get_public_profile,
     profile_to_response_dict,
+    store_owner_cv,
     update_profile,
 )
 
@@ -58,6 +62,45 @@ def put_my_profile(
         fields_set=set(body.model_fields_set),
     )
     return ApiResponse.ok(ProfileResponse.model_validate(profile_to_response_dict(profile)))
+
+
+@router.post("/me/cv", response_model=ApiResponse[CVUploadResponse], status_code=201)
+async def upload_my_cv(
+    file: UploadFile = File(...),
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[CVUploadResponse]:
+    """Upload a PDF/DOCX CV to S3-compatible storage (LocalStack in dev).
+
+    Alias of PRD ``POST /profiles/cv/upload`` using owner-scoped ``/me``.
+    """
+    raw = await file.read()
+    _profile, stored = store_owner_cv(
+        db,
+        owner,
+        filename=file.filename or "upload.bin",
+        content_type=file.content_type,
+        body=raw,
+        size=len(raw),
+    )
+    return ApiResponse.ok(
+        CVUploadResponse(
+            cv_file_path=stored.s3_uri,
+            filename=stored.original_filename,
+            content_type=stored.content_type,
+            size_bytes=stored.size_bytes,
+        )
+    )
+
+
+@router.get("/me/cv", response_model=ApiResponse[CVDownloadResponse])
+def get_my_cv(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[CVDownloadResponse]:
+    """Return a presigned URL to download the owner's current CV."""
+    payload = get_cv_download_url(db, owner)
+    return ApiResponse.ok(CVDownloadResponse.model_validate(payload))
 
 
 @router.get("/{owner_id}", response_model=ApiResponse[PublicProfileResponse])
