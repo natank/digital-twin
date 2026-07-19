@@ -37,7 +37,7 @@ Week 2:
 | **003** | Development Environment | Config, env variables | 150-250 (actual: ~1,280) | 1-2 | P1 High | ✅ Merged ([#5](https://github.com/natank/digital-twin/pull/5)) |
 | **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 (actual: ~500) | 2 | P0 Critical | ✅ Merged ([#6](https://github.com/natank/digital-twin/pull/6)) |
 | **005** | Shared Libraries | Backend/frontend shared code | 200-400 (actual: ~2,040 incl. tests) | 2 | P1 High | ✅ Merged ([#7](https://github.com/natank/digital-twin/pull/7)) |
-| **006** | Development Tooling | Scripts, linting, docs | 300-500 | 1-2 | P2 Medium | Not started |
+| **006** | Development Tooling | Scripts, linting, docs | 300-500 (actual: ~1,685) | 1-2 | P2 Medium | ✅ Merged ([#8](https://github.com/natank/digital-twin/pull/8)) |
 
 **Total Scope:** ~1,550-2,650 lines of code/config across 6 PRs (estimate; PR-001's actual diff was larger due to committed `pnpm-lock.yaml`/`poetry.lock` files, which weren't counted in the original estimate)
 
@@ -131,6 +131,21 @@ Week 2:
   their own PR). First PR to hit this constraint — future PRs need either a
   second reviewer or a deliberate decision to keep using the admin override.
 - Full rationale in `pr-work/PHASE0-005-shared-libraries/PR_DESCRIPTION.md` (local, gitignored)
+
+### PR-006 Notes (as merged)
+- Black / Flake8 (100 cols) / MyPy for Python; ESLint 9 flat config + Prettier 3
+  for TS/JS; pre-commit hooks wire all of the above
+- CI `quality` job now enforces format + lint + typecheck end-to-end (replaces
+  PR-004 placeholders)
+- Frontend unit tests remain **Vitest** (no Jest config) — documented in
+  DEVELOPMENT.md
+- Large specification docs excluded from Prettier to avoid noisy reformats;
+  DEVELOPMENT.md / CONTRIBUTING.md and application code are formatted
+- Documents Podman shims + `poetry-plugin-export` prerequisite called out in
+  earlier Phase 0 PRs
+- **Merged with `--admin`**, same solo-author constraint as PR-005 (all checks
+  green; cannot self-approve under branch protection)
+- Full rationale in `pr-work/PHASE0-006-development-tooling/PR_DESCRIPTION.md` (local, gitignored)
 
 ---
 
