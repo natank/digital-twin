@@ -10,11 +10,17 @@ ENV/
 .venv
 
 # IDEs
-.vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# VS Code — commit shared workspace config; ignore personal/local state
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
 
 # OS
 .DS_Store
