@@ -70,6 +70,13 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = "test"
     aws_default_region: str = "us-east-1"
 
+    # Celery (defaults reuse Redis; override for dedicated broker DBs)
+    celery_broker_url: str = "redis://localhost:6379/0"
+    celery_result_backend: str = "redis://localhost:6379/1"
+    # When True, tasks run in-process (pytest / offline). Prefer env
+    # CELERY_TASK_ALWAYS_EAGER=true in CI rather than shipping True defaults.
+    celery_task_always_eager: bool = False
+
     def cors_origin_list(self) -> list[str]:
         """Parse ``cors_origins`` into a list of non-empty origin strings."""
         return [part.strip() for part in self.cors_origins.split(",") if part.strip()]

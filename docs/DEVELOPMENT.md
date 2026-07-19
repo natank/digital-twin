@@ -68,7 +68,35 @@ Then start app servers in separate terminals:
 ```bash
 pnpm nx serve apps/backend     # http://localhost:8000  (OpenAPI: /docs)
 pnpm nx serve apps/frontend    # http://localhost:4200
+pnpm nx run apps/backend:worker  # Celery worker (CV processing, etc.)
 ```
+
+### Celery worker
+
+Background tasks (CV extraction, profile summary) run in a Celery worker
+backed by Redis. The API process **enqueues** work; the worker process
+**executes** it.
+
+```bash
+# terminal A — API
+pnpm nx serve apps/backend
+
+# terminal B — worker (requires Redis from compose)
+pnpm nx run apps/backend:worker
+# equivalent:
+#   cd apps/backend && poetry run celery -A src.worker.celery_app.celery_app worker -l INFO
+```
+
+Smoke-test without a live worker by setting `CELERY_TASK_ALWAYS_EAGER=true`
+(pytest does this automatically via `conftest.py`).
+
+Env vars (see `.env.example`):
+
+| Variable                   | Purpose                          |
+| -------------------------- | -------------------------------- |
+| `CELERY_BROKER_URL`        | Redis broker (default DB 0)      |
+| `CELERY_RESULT_BACKEND`    | Redis results (default DB 1)     |
+| `CELERY_TASK_ALWAYS_EAGER` | In-process tasks (tests / debug) |
 
 ### Database helpers
 
