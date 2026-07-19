@@ -79,10 +79,12 @@ def test_register_weak_password(client: TestClient) -> None:
 
 
 def test_login_invalid_credentials(client: TestClient) -> None:
+    # Unique email avoids Redis rate-limit leftover keys from prior local runs.
+    email = f"bob-{uuid.uuid4().hex[:8]}@example.com"
     client.post(
         "/auth/register",
         json={
-            "email": "bob@example.com",
+            "email": email,
             "password": STRONG_PASSWORD,
             "first_name": "Bob",
             "last_name": "Owner",
@@ -90,7 +92,7 @@ def test_login_invalid_credentials(client: TestClient) -> None:
     )
     response = client.post(
         "/auth/login",
-        json={"email": "bob@example.com", "password": "WrongPass1!"},
+        json={"email": email, "password": "WrongPass1!"},
     )
     assert response.status_code == 401
     assert "Invalid email or password" in response.json()["error"]["message"]

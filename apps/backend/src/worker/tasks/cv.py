@@ -114,7 +114,11 @@ def _run_process_cv(job_id: str, *, generate_summary: bool = False) -> dict[str,
 
 
 @celery_app.task(name="tasks.process_cv", bind=True, max_retries=2)
-def process_cv(self, job_id: str, generate_summary: bool = False) -> dict[str, str]:  # type: ignore[no-untyped-def]
+def process_cv(
+    self: object,
+    job_id: str,
+    generate_summary: bool = False,
+) -> dict[str, str]:
     """Process an uploaded CV: extract text; optional LLM summary (PR-010)."""
     del self
     return _run_process_cv(job_id, generate_summary=generate_summary)
