@@ -31,6 +31,9 @@ This master plan outlines the high-level sequence of work to build the Digital T
 3. **Layered Approach** — Each service depends on previous ones
 4. **MVP Focus** — Deliver E1-E4 services first (core functionality)
 5. **Iterative Validation** — Test integration at each phase
+6. **CI-Green Before Merge** — Never land a PR until required CI checks pass
+7. **Admin merge without review is allowed** — solo/small-team may use
+   `--admin` to skip human approval; **not** to skip green CI
 
 ### Success Definition
 - **MVP Launch:** End of Q3 2026
@@ -1344,27 +1347,47 @@ Use the same content from PR_DESCRIPTION.md
 
 ### Stage 6: Merge & Cleanup
 
+**Hard rules (post Phase 1 E2 retrospective):**
+
+| Rule | Meaning |
+|------|---------|
+| **1. Merge only when CI is green** | Required checks (`quality`, `test`, `build`, `docker-backend`, `docker-frontend`) must all pass on the PR head **before** any merge. Do not squash-merge a red PR “and fix later.” |
+| **2. Admin may skip human review** | Solo or small-team work may use `gh pr merge --admin` to bypass the required approving review. **Admin does not bypass the green-CI rule.** |
+
 **Merge Checklist:**
 
 ```
 Before merging:
-├─ [ ] All reviewers approved (min 1-2)
-├─ [ ] All CI/CD checks passing
-├─ [ ] No merge conflicts
-├─ [ ] Commit history is clean
-├─ [ ] No debug code left
-├─ [ ] Database migrations tested
-└─ [ ] Tests passing on CI
+├─ [ ] All required CI checks green on this PR (watch until complete)
+├─ [ ] quality + test + build + docker images passed
+├─ [ ] Human review: ≥1 approval OR deliberate --admin (solo / no reviewer)
+├─ [ ] No merge conflicts; branch up to date with main if protection requires it
+├─ [ ] No debug code / secrets
+├─ [ ] Migrations tested when present
+└─ [ ] Local lint/typecheck/tests already run (reduces red CI loops)
 
 Merge strategy:
-├─ Use "Squash and merge" for small PRs (<300 lines)
-├─ Use "Create a merge commit" for larger PRs
-└─ Avoid "Rebase and merge" (rewrites commit SHAs onto main; merge/squash keep a clearer record of what landed together)
+├─ Prefer "Squash and merge" for feature PRs
+├─ Use "Create a merge commit" only when intentionally preserving multi-commit history
+└─ Avoid "Rebase and merge" unless there is a strong reason
+
+CLI (after CI is green):
+├─ With review approval:  gh pr merge {n} --squash --delete-branch
+└─ Solo / no review:      gh pr merge {n} --admin --squash --delete-branch
+                          # only when gh pr checks {n} shows all required checks pass
 
 Commit message after merge:
 {PR-Title} ({PR-Number})
 
 {PR description summary}
+```
+
+**Anti-pattern (do not repeat):**
+
+```
+❌  gh pr merge --admin ...   # while quality/test still failing or still running
+✅  gh pr checks {n} --watch  # wait until pass
+✅  gh pr merge --admin ...   # only then, if skipping human review
 ```
 
 **After Merge:**
@@ -1430,10 +1453,14 @@ pr-archive/
 | Test Coverage | > 80% | CI (coverage report) |
 | Lint Passing | 0 errors | CI (flake8, ESLint) |
 | Type Check | 0 errors | CI (mypy, TypeScript) |
+| Format check | Black + Prettier clean | CI (`format:check`) |
 | Performance | No regression | Manual testing |
-| Security Scan | 0 critical | CI (bandit, npm audit) |
-| Code Review | ≥1 approval | GitHub |
+| Security Scan | 0 critical | CI / GitGuardian |
+| Code Review | ≥1 approval **or** `--admin` (solo) | GitHub |
+| CI green | All required jobs pass | GitHub Actions (**hard gate**) |
 | Documentation | Updated | Manual review |
+
+**Review vs CI:** human review can be waived with admin privileges; **CI cannot**.
 
 **Expected PR Metrics (across project):**
 
@@ -1611,21 +1638,17 @@ gh issue comment {number} --body "Addressed in PR #456"
 gh issue close {number}
 
 # ========== Merging ==========
+# Always wait for green CI first:
+gh pr checks {number} --watch
 
-# Merge PR (auto-detect squash/merge)
-gh pr merge {number}
-
-# Merge with squash (for small PRs)
-gh pr merge {number} --squash
-
-# Merge with merge commit (for larger PRs)
-gh pr merge {number} --merge
-
-# Merge and delete branch
-gh pr merge {number} --delete-branch
-
-# Merge and close related issue
+# Merge with squash (preferred) after checks pass + review approval
 gh pr merge {number} --squash --delete-branch
+
+# Solo / no human review: admin bypass for approval only (CI must still be green)
+gh pr merge {number} --admin --squash --delete-branch
+
+# Merge commit (larger intentional multi-commit landings)
+gh pr merge {number} --merge --delete-branch
 ```
 
 **Workflow Scripts (Create as shell functions):**
@@ -1736,20 +1759,38 @@ pr_review() {
     echo "   Run tests locally, review code"
 }
 
-# Merge PR and cleanup
+# Merge PR and cleanup — blocks unless CI is green
 pr_merge() {
     local pr_number=$1
     local squash=${2:-true}
-    
-    if [ "$squash" = "true" ]; then
-        gh pr merge "${pr_number}" --squash --delete-branch
-    else
-        gh pr merge "${pr_number}" --merge --delete-branch
+    local use_admin=${3:-false}   # true = --admin (skip human review only)
+
+    if [ -z "$pr_number" ]; then
+        echo "Usage: pr_merge {pr_number} [squash=true] [admin=false]"
+        return 1
     fi
-    
+
+    echo "Waiting for CI on PR #${pr_number}..."
+    if ! gh pr checks "${pr_number}" --watch; then
+        echo "❌ CI not green — fix failures before merging"
+        return 1
+    fi
+
+    local admin_flag=()
+    if [ "$use_admin" = "true" ]; then
+        admin_flag=(--admin)
+        echo "Using --admin (bypasses required review; CI already green)"
+    fi
+
+    if [ "$squash" = "true" ]; then
+        gh pr merge "${pr_number}" "${admin_flag[@]}" --squash --delete-branch
+    else
+        gh pr merge "${pr_number}" "${admin_flag[@]}" --merge --delete-branch
+    fi
+
     git checkout main
     git pull origin main
-    
+
     echo "✅ PR #${pr_number} merged and cleaned up"
 }
 ```
@@ -1763,6 +1804,7 @@ pr_start e1 001 auth-registration
 # 2. Do work...
 # - Implement feature
 # - Write tests
+# - Run local quality parity: lint, format:check, mypy, pytest
 # - Update docs
 
 # 3. Commit regularly
@@ -1775,22 +1817,14 @@ pr_create 001
 # 5. Mark as ready (from web or CLI)
 gh pr ready --number {pr_number}
 
-# 6. Link issues
-gh pr edit {pr_number} --add-label fixes-001
+# 6. Wait for CI (required)
+gh pr checks {pr_number} --watch
 
-# 7. Wait for review
-gh pr status
-
-# 8. Address feedback
-# - Make changes
-# - Push updates
-git push origin e1/001-auth-registration
-
-# 9. Get approval
-gh pr view {pr_number}
-
-# 10. Merge
+# 7. Review path (pick one):
+#    a) Human approval → then:
 pr_merge {pr_number}
+#    b) Solo / no reviewer available → admin after green CI:
+pr_merge {pr_number} true true
 ```
 
 ---

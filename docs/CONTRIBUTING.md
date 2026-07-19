@@ -71,12 +71,26 @@ Branch protection expects:
 
 - `quality`, `test`, `build`
 - `docker-backend`, `docker-frontend`
-- At least **1 approving review**
+- At least **1 approving review** (or admin override — see below)
 - Conversation resolution
 - Branch up to date with `main`
 
-Admins may bypass in emergencies (`enforce_admins: false`); do not rely on
-that for normal work.
+### Merge policy (retrospective)
+
+1. **Merge only when CI is green.** Wait for required checks to pass on the PR
+   (`gh pr checks {n} --watch`). Do not land a red or still-running PR.
+2. **Admin may skip human review, not CI.** Solo / small-team authors may use
+   `gh pr merge --admin --squash --delete-branch` when no reviewer is available.
+   `--admin` is **not** a shortcut around failed or incomplete CI.
+
+Local parity before push (avoids red CI loops):
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm nx run-many --target=test --all
+```
 
 ## Commit conventions
 
@@ -121,11 +135,18 @@ docs: clarify Podman setup in DEVELOPMENT.md
 ### Merge
 
 ```bash
+# 1) Wait for green CI
+gh pr checks {number} --watch
+
+# 2a) After human approval
 gh pr merge {number} --squash --delete-branch
+
+# 2b) Solo / no review (admin bypasses approval only)
+gh pr merge {number} --admin --squash --delete-branch
 ```
 
-After phase PRs merge, update `docs/phase-0/PR_BREAKDOWN.md` status notes
-(same pattern as prior Phase 0 merges).
+After phase PRs merge, update the relevant `docs/phase-*/PR_BREAKDOWN.md`
+status notes (same pattern as prior phase merges).
 
 ## Security & secrets
 
