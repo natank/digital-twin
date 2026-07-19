@@ -33,7 +33,7 @@ Week 2:
 | PR # | Title | Scope | Lines | Days | Priority | Status |
 |------|-------|-------|-------|------|----------|--------|
 | **001** | Nx Monorepo Initialization | Build system setup | 200-400 (actual: ~11,800, mostly lockfiles) | 2 | P0 Critical | ✅ Merged ([#3](https://github.com/natank/digital-twin/pull/3)) |
-| **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 | 2 | P0 Critical | Not started |
+| **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 (actual: ~1,115) | 2 | P0 Critical | ✅ Merged ([#4](https://github.com/natank/digital-twin/pull/4)) |
 | **003** | Development Environment | Config, env variables | 150-250 | 1-2 | P1 High | Not started |
 | **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 | 2 | P0 Critical | Not started |
 | **005** | Shared Libraries | Backend/frontend shared code | 200-400 | 2 | P1 High | Not started |
@@ -47,6 +47,25 @@ Week 2:
 - Restructured `@nxlv/python` generator output to a flat `src/` layout (matches TECHNICAL_DESIGN.md) instead of its default nested path
 - New dev-machine prerequisite surfaced: `poetry-plugin-export` (via `pipx inject poetry poetry-plugin-export`) is required for Nx's Python build executor — not yet documented in a setup guide (lands in PR-006)
 - Full rationale in `pr-work/PHASE0-001-nx-monorepo/PR_DESCRIPTION.md` (local, gitignored)
+
+### PR-002 Notes (as merged)
+- Migrations are model-driven: SQLAlchemy models in `apps/backend/src/db/models.py`
+  are the source of truth, with the initial schema generated via
+  `alembic revision --autogenerate` rather than hand-written SQL
+- Seed data (`scripts/seed_data.py`) is a Python script, not a `.sql` file,
+  since it needs runtime UUID/hash generation; `db-init.sql` only enables
+  the `pgcrypto` extension on first container start
+- New Nx targets added to `apps/backend/project.json`: `migrate`,
+  `migrate-down`, `seed`
+- Verified with a full clean-slate test (dropped Docker volumes, re-ran
+  migration + seed from an empty database) in addition to the standard
+  upgrade/downgrade/upgrade round-trip
+- `.env.example` added at repo root; full `.env.local` tooling/validation
+  is still PR-003 scope
+- Dev machine runs Podman (not Docker Desktop) via `docker`/`docker
+  compose` CLI shims — transparent to `docker-compose.yml` itself, but
+  worth a callout in PR-006's DEVELOPMENT.md
+- Full rationale in `pr-work/PHASE0-002-database-infrastructure/PR_DESCRIPTION.md` (local, gitignored)
 
 ---
 
