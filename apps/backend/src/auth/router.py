@@ -10,7 +10,15 @@ from sqlalchemy.orm import Session
 
 from src.api.deps import get_current_owner, get_db
 from src.auth.rate_limit import get_login_rate_limiter
-from src.auth.schemas import LoginRequest, OwnerPublic, RegisterRequest, TokenResponse
+from src.auth.schemas import (
+    ForgotPasswordRequest,
+    LoginRequest,
+    OwnerPublic,
+    RegisterRequest,
+    ResetPasswordRequest,
+    TokenResponse,
+    VerifyEmailRequest,
+)
 from src.auth.service import (
     authenticate_owner,
     create_owner_session,
@@ -19,6 +27,7 @@ from src.auth.service import (
     resolve_session_for_token,
     revoke_session,
 )
+from src.auth.tokens import request_password_reset, reset_password, verify_email
 from src.db.models import Owner
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -119,3 +128,33 @@ def refresh_token(
             owner=_owner_public(owner),
         )
     )
+
+
+@router.post("/verify-email", response_model=ApiResponse[OwnerPublic])
+def verify_email_route(
+    body: VerifyEmailRequest,
+    db: Session = Depends(get_db),
+) -> ApiResponse[OwnerPublic]:
+    """Confirm an email verification token."""
+    owner = verify_email(db, body.token)
+    return ApiResponse.ok(_owner_public(owner))
+
+
+@router.post("/forgot-password", response_model=ApiResponse[dict[str, str]], status_code=202)
+def forgot_password(
+    body: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict[str, str]]:
+    """Request a password-reset email (always returns the same message)."""
+    request_password_reset(db, body.email)
+    return ApiResponse.ok({"detail": "If the account exists, a reset email was sent"})
+
+
+@router.post("/reset-password", response_model=ApiResponse[OwnerPublic])
+def reset_password_route(
+    body: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+) -> ApiResponse[OwnerPublic]:
+    """Set a new password using a reset token; invalidates all sessions."""
+    owner = reset_password(db, raw_token=body.token, new_password=body.new_password)
+    return ApiResponse.ok(_owner_public(owner))

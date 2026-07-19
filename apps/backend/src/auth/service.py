@@ -55,6 +55,16 @@ def register_owner(
     db.add(owner)
     db.commit()
     db.refresh(owner)
+
+    # Best-effort verification email (console in dev). Failures must not
+    # roll back registration.
+    try:
+        from src.auth.tokens import send_verification_email
+
+        send_verification_email(db, owner)
+    except Exception:  # noqa: BLE001
+        pass
+
     return owner
 
 

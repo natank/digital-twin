@@ -37,3 +37,16 @@ class TokenResponse(BaseSchema):
     token_type: str = "bearer"
     expires_at: datetime
     owner: OwnerPublic
+
+
+class VerifyEmailRequest(BaseSchema):
+    token: str = Field(min_length=10, max_length=256)
+
+
+class ForgotPasswordRequest(BaseSchema):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseSchema):
+    token: str = Field(min_length=10, max_length=256)
+    new_password: str = Field(min_length=8, max_length=128)
