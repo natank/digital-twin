@@ -192,13 +192,12 @@ Request → Check Authentication → Verify Role → Grant/Deny Access
                           "anonymous" → Allow public routes only
 ```
 
-**Database User Model:**
+**Database Owner Model:**
 ```
-User {
+Owner {
   id: UUID
   email: string (unique)
   password: hashed
-  role: "owner" | "visitor"  # Determined at registration
   profile: {
     cv_path: string
     summary: string
@@ -208,6 +207,11 @@ User {
   updated_at: timestamp
 }
 ```
+
+Only owners have accounts. Visitors are always anonymous — identified by a
+server-issued session ID, never a database user record. (The optional
+`user_id` on ChatSession below covers a future case where a logged-in owner
+tests their own twin.)
 
 **Session/Chat Model:**
 ```
@@ -248,9 +252,10 @@ ChatSession {
 
 **Visitor Session:**
 - Duration: 30 minutes of inactivity or browser close
-- Stored in memory or short-lived storage
 - Session ID only (no authentication)
-- No persistent tracking (privacy-friendly)
+- Conversation transcript persisted server-side so the owner can review it
+  (retained per data-retention policy, default 90 days — see PRD E6-S2)
+- No cross-session visitor tracking (privacy-friendly)
 
 ### Security Considerations
 - Owner passwords hashed (bcrypt/Argon2)

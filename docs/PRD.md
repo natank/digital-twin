@@ -355,7 +355,7 @@ VISITOR CHAT FLOW:
 
 **Priority:** P0 (Critical)  
 **Story Points:** 8  
-**Dependencies:** Document processing library (PyPDF2, python-docx)
+**Dependencies:** Document processing library (pypdf, python-docx)
 
 ---
 
@@ -506,7 +506,7 @@ VISITOR CHAT FLOW:
 - Visitor can refresh page and see conversation history
 - Session expires after 30 minutes of inactivity
 - Visitor can start new conversation
-- Session data cleaned up after 7 days
+- Expired sessions closed; conversation transcripts retained per data-retention policy (default 90 days, see E6-S2)
 
 **Priority:** P1 (Must Have)  
 **Story Points:** 5  
@@ -788,7 +788,7 @@ VISITOR CHAT FLOW:
 
 **Acceptance Criteria:**
 - Owner can configure Pushover account in settings
-- Owner enters Pushover user key and API token
+- Owner enters their Pushover user key (the app API token is platform-level server config, not per-owner)
 - Test notification sent to verify setup
 - Owner can select notification device (optional)
 - Owner can customize notification sound
@@ -909,7 +909,7 @@ VISITOR CHAT FLOW:
 - E7: Analytics & reporting
 - E4: Advanced conversation management
 
-### Phase 2 Extended - Q4 2026
+### Phase 3 - Q1 2027
 **Goal:** Notifications & LinkedIn
 - E8: Pushover push notifications
 - E2: LinkedIn integration
@@ -936,7 +936,7 @@ VISITOR CHAT FLOW:
 - < 2% conversation abandonment rate
 - > 80% on-topic response rate
 - > 95% uptime
-- < 100ms avg API latency
+- < 1s API latency (p95, non-LLM endpoints; chat responses < 5s)
 
 ### User Adoption
 - 50% feature adoption within 30 days
