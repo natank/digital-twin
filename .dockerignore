@@ -1,0 +1,51 @@
+# Git / VCS
+.git
+.github
+
+# Dependencies (reinstalled in image)
+node_modules
+**/node_modules
+**/.venv
+**/venv
+**/.cache
+**/__pycache__
+**/*.py[cod]
+
+# Build / test output
+**/dist
+**/out-tsc
+**/.nx
+coverage
+reports
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+**/*.egg-info
+**/test-output
+
+# Local env and secrets
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.vscode
+.idea
+**/.DS_Store
+**/*.swp
+*~
+
+# Docs and local-only artifacts (not needed in images)
+docs
+pr-work
+pr-archive
+
+# Tests (not needed in production images)
+**/tests
+**/*.spec.ts
+**/*.spec.tsx
+**/*.test.ts
+**/*.test.tsx
+
+# Misc local tooling
+**/.python-version

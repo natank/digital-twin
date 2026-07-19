@@ -1,0 +1,12 @@
+# Default owner for the monorepo.
+# Refine paths as the team grows (e.g. apps/frontend/* @frontend-team).
+
+* @natank
+
+# Infrastructure and CI
+/.github/ @natank
+/docker-compose.yml @natank
+/scripts/ @natank
+
+# Docs
+/docs/ @natank
