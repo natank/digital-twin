@@ -256,3 +256,51 @@ def get_cv_job(db: Session, owner: Owner, job_id: uuid.UUID) -> CVProcessingJob:
     if job is None:
         raise NotFoundError("CV processing job not found")
     return job
+
+
+def get_summary_payload(db: Session, owner: Owner) -> dict[str, Any]:
+    """Return profile_summary + skills + years for the owner."""
+    profile = get_or_create_profile(db, owner)
+    return {
+        "profile_summary": profile.profile_summary,
+        "skills": profile.skills,
+        "experience_years": profile.experience_years,
+    }
+
+
+def apply_generated_summary(db: Session, owner: Owner, generated: dict[str, Any]) -> Profile:
+    """Write LLM (or mock) output onto the owner profile."""
+    profile = get_or_create_profile(db, owner)
+    summary_obj = generated.get("profile_summary")
+    if summary_obj is None:
+        # Treat whole dict as the summary document.
+        summary_obj = {
+            k: v for k, v in generated.items() if k not in {"skills", "experience_years"}
+        }
+    profile.profile_summary = summary_obj
+    if generated.get("skills") is not None:
+        profile.skills = generated["skills"]
+    if generated.get("experience_years") is not None:
+        profile.experience_years = generated["experience_years"]
+    # Optionally sync headline from summary
+    if isinstance(summary_obj, dict) and summary_obj.get("headline") and not profile.headline:
+        profile.headline = str(summary_obj["headline"])[:255]
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+
+def regenerate_profile_summary(db: Session, owner: Owner) -> Profile:
+    """Generate summary from existing extracted CV text (sync, for API regenerate)."""
+    from src.llm.claude import generate_profile_summary
+
+    profile = get_or_create_profile(db, owner)
+    text = (profile.cv_extracted_text or "").strip()
+    if not text:
+        raise ValidationError(
+            "Extract CV text before generating a summary (upload + process-cv first)",
+            details={"field": "cv_extracted_text"},
+        )
+    generated = generate_profile_summary(text)
+    return apply_generated_summary(db, owner, generated)

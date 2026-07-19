@@ -28,6 +28,29 @@ _celery_app.conf.task_always_eager = True
 _celery_app.conf.task_eager_propagates = True
 
 
+@pytest.fixture(autouse=True)
+def _default_llm_mock() -> None:  # type: ignore[misc]
+    """Prevent live Anthropic calls in the suite; tests may override."""
+    from src.llm.claude import set_profile_summary_generator
+
+    def _default(cv_text: str) -> dict:
+        return {
+            "profile_summary": {
+                "headline": "Test Professional",
+                "summary": f"Auto-mock summary ({len(cv_text)} chars).",
+                "highlights": [],
+                "skills": [],
+                "experience_years": None,
+            },
+            "skills": [],
+            "experience_years": None,
+        }
+
+    set_profile_summary_generator(_default)
+    yield
+    set_profile_summary_generator(None)
+
+
 @pytest.fixture()
 def db_session() -> Session:
     """In-memory SQLite session with the full ORM schema."""

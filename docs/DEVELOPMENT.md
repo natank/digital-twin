@@ -111,7 +111,19 @@ curl -X POST localhost:8000/profiles/me/cv \
   -H "Authorization: Bearer $TOKEN" \
   -F file=@./path/to/resume.pdf
 curl localhost:8000/profiles/me/cv -H "Authorization: Bearer $TOKEN"
+
+# Extract text + LLM summary (requires worker unless CELERY_TASK_ALWAYS_EAGER=true)
+curl -X POST localhost:8000/profiles/me/process-cv \
+  -H "Authorization: Bearer $TOKEN"
+curl localhost:8000/profiles/me/summary -H "Authorization: Bearer $TOKEN"
 ```
+
+### Claude / LLM (profile summary)
+
+Set a real `CLAUDE_API_KEY` for live summary generation. Unit tests **never**
+call Anthropic — they install a mock via `set_profile_summary_generator`
+(autouse in `conftest.py`). Without a key, process-cv still extracts text and
+records a summary failure message on the job.
 
 ### Database helpers
 
