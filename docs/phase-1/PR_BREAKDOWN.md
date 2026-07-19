@@ -746,11 +746,13 @@ pr-work/PHASE1-002-auth-register-login/
 
 ### Review bar
 
-- CI green (`quality`, `test`, `build`, docker checks)
+- **CI green first** (`quality`, `test`, `build`, docker checks) — hard gate;
+  never merge a red or in-progress PR (see IMPLEMENTATION_MASTER_PLAN § Stage 6)
 - Migrations reversible (`upgrade` / `downgrade` smoke)
 - No real secrets; LLM/S3 mocked in unit tests
 - OpenAPI updated for new routes
-- 1 approval (or `--admin` if solo, same as late Phase 0)
+- Human review: **1 approval**, or **`--admin`** when solo / no reviewer
+  available (`--admin` does **not** waive green CI)
 
 ### Recommended sequencing (solo or small team)
 
