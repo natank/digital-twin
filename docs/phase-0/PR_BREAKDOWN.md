@@ -36,7 +36,7 @@ Week 2:
 | **002** | Database & Infrastructure | DB schema, Docker setup | 300-500 (actual: ~1,115) | 2 | P0 Critical | ✅ Merged ([#4](https://github.com/natank/digital-twin/pull/4)) |
 | **003** | Development Environment | Config, env variables | 150-250 (actual: ~1,280) | 1-2 | P1 High | ✅ Merged ([#5](https://github.com/natank/digital-twin/pull/5)) |
 | **004** | CI/CD Pipeline | GitHub Actions, tests | 400-600 (actual: ~500) | 2 | P0 Critical | ✅ Merged ([#6](https://github.com/natank/digital-twin/pull/6)) |
-| **005** | Shared Libraries | Backend/frontend shared code | 200-400 | 2 | P1 High | Not started |
+| **005** | Shared Libraries | Backend/frontend shared code | 200-400 (actual: ~1,400 incl. tests) | 2 | P1 High | 🔄 In review ([#7](https://github.com/natank/digital-twin/pull/7)) |
 | **006** | Development Tooling | Scripts, linting, docs | 300-500 | 1-2 | P2 Medium | Not started |
 
 **Total Scope:** ~1,550-2,650 lines of code/config across 6 PRs (estimate; PR-001's actual diff was larger due to committed `pnpm-lock.yaml`/`poetry.lock` files, which weren't counted in the original estimate)
