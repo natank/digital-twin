@@ -77,6 +77,27 @@
         "command": "poetry run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000",
         "cwd": "{projectRoot}"
       }
+    },
+    "migrate": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run alembic upgrade head",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "migrate-down": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run alembic downgrade -1",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "seed": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run python scripts/seed_data.py",
+        "cwd": "{projectRoot}"
+      }
     }
   },
   "tags": [],
