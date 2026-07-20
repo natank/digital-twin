@@ -816,8 +816,8 @@ Parallelism: after **002**, Profile work needs auth; Celery **006** can proceed 
 
 **Ready for Phase 2 when:**
 
-- [ ] Auth + Profile + Chat APIs demoable via curl/httpie or Bruno collection
-- [ ] Notification and Config PR breakdown drafted (`docs/phase-2/PR_BREAKDOWN.md`)
+- [x] Auth + Profile + Chat APIs demoable via curl/httpie or Bruno collection
+- [x] Notification and Config PR breakdown drafted (`docs/phase-2/PR_BREAKDOWN.md`)
 
 ---
 
@@ -864,9 +864,9 @@ curl -X POST localhost:8000/chat/sessions/$SID/messages \
 
 ## Next Document
 
-When Phase 1 sign-off is near complete:
+Phase 1 is complete. Continue with:
 
-1. Create `docs/phase-2/PR_BREAKDOWN.md` (Notifications E4, Config E5)
-2. Keep Phase 3 (Frontend) planned against the OpenAPI frozen at Phase 1 end
+1. [Phase 2 PR Breakdown](../phase-2/PR_BREAKDOWN.md) — Notifications E4, Pushover E8, Config E5
+2. Keep Phase 3 (Frontend) planned against the OpenAPI frozen at Phase 2 end
 
 **Estimated Phase 2 start:** after Week 8 (~2026-09-06), adjust to actual velocity.
