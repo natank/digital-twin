@@ -87,6 +87,15 @@ def process_cv_job(
     job.status = "completed"
     db.add(job)
     db.commit()
+
+    if generate_summary and profile is not None and profile.profile_summary:
+        try:
+            from src.notifications.events import notify_profile_summary_ready
+
+            notify_profile_summary_ready(job.owner_id, db=db)
+        except Exception:  # noqa: BLE001
+            logger.exception("summary_ready notification failed job_id=%s", job_id)
+
     logger.info("cv job completed job_id=%s", job_id)
     return {"job_id": str(job_id), "status": "completed"}
 

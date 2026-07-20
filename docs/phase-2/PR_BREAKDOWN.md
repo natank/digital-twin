@@ -40,18 +40,18 @@ Buffer (end of Week 10 / Phase 3 planning):
 
 ## PR Breakdown Summary
 
-| PR #    | Title                                    | Epic     | Week | Est. lines | Priority | Status      |
-| ------- | ---------------------------------------- | -------- | ---- | ---------- | -------- | ----------- |
-| **001** | Notifications models + module shell      | E4       | 9    | 250–400    | P0       | Not started |
-| **002** | In-app notification API                  | E4-S1    | 9    | 300–450    | P0       | Not started |
-| **003** | Pushover config setup                    | E8-S1    | 9    | 300–450    | P0       | Not started |
-| **004** | Pushover send + Celery retry             | E8-S2    | 9    | 350–550    | P0       | Not started |
-| **005** | Event wiring + preferences + test notify | E4/E8    | 9    | 350–500    | P0       | Not started |
-| **006** | Config models + owner CRUD               | E5       | 10   | 300–450    | P0       | Not started |
-| **007** | System prompt + versions + preview       | E5-S1    | 10   | 350–500    | P0       | Not started |
-| **008** | Tone, length, topic scope                | E5-S2/S3 | 10   | 250–400    | P1       | Not started |
-| **009** | Chat integration with Config             | E5+E3    | 10   | 300–450    | P0       | Not started |
-| **010** | Integration tests & API polish           | —        | 10   | 300–500    | P1       | Not started |
+| PR #    | Title                                    | Epic     | Week | Est. lines | Priority | Status            |
+| ------- | ---------------------------------------- | -------- | ---- | ---------- | -------- | ----------------- |
+| **001** | Notifications models + module shell      | E4       | 9    | 250–400    | P0       | ✅ In PR (Week 9) |
+| **002** | In-app notification API                  | E4-S1    | 9    | 300–450    | P0       | ✅ In PR (Week 9) |
+| **003** | Pushover config setup                    | E8-S1    | 9    | 300–450    | P0       | ✅ In PR (Week 9) |
+| **004** | Pushover send + Celery retry             | E8-S2    | 9    | 350–550    | P0       | ✅ In PR (Week 9) |
+| **005** | Event wiring + preferences + test notify | E4/E8    | 9    | 350–500    | P0       | ✅ In PR (Week 9) |
+| **006** | Config models + owner CRUD               | E5       | 10   | 300–450    | P0       | Not started       |
+| **007** | System prompt + versions + preview       | E5-S1    | 10   | 350–500    | P0       | Not started       |
+| **008** | Tone, length, topic scope                | E5-S2/S3 | 10   | 250–400    | P1       | Not started       |
+| **009** | Chat integration with Config             | E5+E3    | 10   | 300–450    | P0       | Not started       |
+| **010** | Integration tests & API polish           | —        | 10   | 300–500    | P1       | Not started       |
 
 **Total scope (estimate):** ~3,000–4,700 lines across 10 PRs (application code + migrations + tests; lockfile churn excluded).
 

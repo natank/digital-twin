@@ -59,10 +59,15 @@ class Settings(BaseSettings):
     github_oauth_client_id: str = ""
     github_oauth_client_secret: str = ""
 
-    # LLM / notifications / storage placeholders
+    # LLM / notifications / storage
     claude_api_key: str = "sk-test"
     claude_model: str = "claude-sonnet-4-20250514"
+    # Platform-level Pushover application token (not per-owner).
     pushover_app_token: str = "test-token"
+    pushover_api_url: str = "https://api.pushover.net/1/messages.json"
+    pushover_timeout_seconds: float = 10.0
+    notification_max_retries: int = 3
+    # Fernet key for encrypting Pushover user keys; empty + debug → dev fallback.
     encryption_key: str = ""
     s3_bucket: str = "digital-twin-dev"
     aws_endpoint_url: str = "http://localhost:4566"
