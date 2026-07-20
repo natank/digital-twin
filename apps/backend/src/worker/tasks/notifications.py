@@ -121,9 +121,7 @@ def deliver_notification(self: Any, notification_id: str) -> dict[str, str]:
         db = SessionLocal()
         try:
             notif = (
-                db.query(Notification)
-                .filter(Notification.id == uuid.UUID(notification_id))
-                .first()
+                db.query(Notification).filter(Notification.id == uuid.UUID(notification_id)).first()
             )
             if notif is not None and notif.delivery_status == "pending":
                 notif.delivery_status = "failed"
