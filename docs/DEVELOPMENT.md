@@ -150,6 +150,28 @@ curl -N -X POST "localhost:8000/chat/sse/$SID/stream" \
 
 WebSocket chat is deferred; SSE is the MVP streaming path.
 
+### Notifications & Pushover (Phase 2)
+
+In-app notifications are always stored. Push delivery uses Celery + the
+platform `PUSHOVER_APP_TOKEN` and each owner's encrypted user key.
+
+```bash
+# After login as owner:
+curl -X PUT localhost:8000/notifications/me/pushover \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"user_key":"YOUR_PUSHOVER_USER_KEY","enabled":true}'
+
+curl -X POST localhost:8000/notifications/me/test \
+  -H "Authorization: Bearer $TOKEN"
+
+curl localhost:8000/notifications/me -H "Authorization: Bearer $TOKEN"
+```
+
+Unit tests install `FakePushoverClient` via `set_pushover_client` — never call
+the live Pushover API in CI. Set a real `ENCRYPTION_KEY` (Fernet) before
+production; debug mode falls back to a deterministic dev key when empty.
+
 ### Database helpers
 
 ```bash

@@ -247,7 +247,21 @@ def post_message(
 
     touch_session(db, session, cfg)
 
-    # Hook for Phase 2 notifications (no-op / log).
+    # Phase 2: emit notifications (never fail the chat response).
+    try:
+        _emit_chat_notifications(
+            db,
+            session=session,
+            visitor_text=text,
+            public_id=public_id,
+            boundary_redirect=boundary_redirect,
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception(
+            "notification hook failed session=%s",
+            public_id,
+        )
+
     logger.info(
         "message_processed session=%s visitor_msg=%s ai_msg=%s boundary=%s",
         public_id,
@@ -262,6 +276,47 @@ def post_message(
         "session": session,
         "boundary_redirect": boundary_redirect,
     }
+
+
+def _emit_chat_notifications(
+    db: Session,
+    *,
+    session: ChatSession,
+    visitor_text: str,
+    public_id: str,
+    boundary_redirect: bool,
+) -> None:
+    """Notify owner of first message / high-intent signals."""
+    from src.notifications.events import (
+        looks_like_high_intent,
+        notify_conversation_started,
+        notify_high_intent,
+    )
+
+    visitor_count = (
+        db.query(ChatMessage)
+        .filter(
+            ChatMessage.session_id == session.id,
+            ChatMessage.sender == "visitor",
+        )
+        .count()
+    )
+    if visitor_count == 1:
+        notify_conversation_started(
+            session.owner_id,
+            session_public_id=public_id,
+            preview=visitor_text,
+            db=db,
+        )
+    if boundary_redirect or looks_like_high_intent(visitor_text):
+        # High-intent: keyword match; also surface boundary-flagged as attention.
+        if looks_like_high_intent(visitor_text):
+            notify_high_intent(
+                session.owner_id,
+                session_public_id=public_id,
+                preview=visitor_text,
+                db=db,
+            )
 
 
 def stream_reply_chunks(text: str, *, chunk_size: int = 48) -> list[str]:

@@ -44,6 +44,7 @@ def create_celery_app() -> Celery:
             "src.worker.tasks",
             "src.worker.tasks.ping",
             "src.worker.tasks.cv",
+            "src.worker.tasks.notifications",
         ],
     )
     app.conf.update(

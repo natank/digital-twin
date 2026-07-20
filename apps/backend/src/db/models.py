@@ -201,3 +201,65 @@ class ConversationContext(Base):
     )
 
     session: Mapped["ChatSession"] = relationship(back_populates="context")
+
+
+class Notification(Base):
+    """In-app notification record for an owner (optionally delivered via Pushover)."""
+
+    __tablename__ = "notifications"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("owners.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # conversation_started | high_intent_detected | profile_summary_ready | …
+    type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    message: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Pushover priority: -1 low, 0 normal, 1 high, 2 emergency
+    priority: Mapped[int] = mapped_column(nullable=False, default=0)
+    read: Mapped[bool] = mapped_column(nullable=False, default=False)
+    # pending | sent | failed | skipped
+    delivery_status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="pending", index=True
+    )
+    retry_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    pushover_receipt: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+    sent_at: Mapped[datetime | None] = mapped_column(nullable=True)
+
+    owner: Mapped["Owner"] = relationship()
+
+
+class PushoverConfig(Base):
+    """Owner Pushover user-key config and notification preferences.
+
+    Platform app token is ``Settings.pushover_app_token`` (not stored per owner).
+    Preferences (per-type enable flags) live in ``preferences`` JSON.
+    """
+
+    __tablename__ = "pushover_configs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("owners.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+    # Fernet ciphertext of the owner's Pushover user key
+    user_key_encrypted: Mapped[str] = mapped_column(String(512), nullable=False)
+    device: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    sound: Mapped[str] = mapped_column(String(64), nullable=False, default="pushover")
+    enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
+    # e.g. {"global_push_enabled": true, "types": {"conversation_started": true, ...}}
+    preferences: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    owner: Mapped["Owner"] = relationship()
