@@ -71,6 +71,33 @@ pnpm nx serve apps/frontend    # http://localhost:4200
 pnpm nx run apps/backend:worker  # Celery worker (CV processing, etc.)
 ```
 
+### Frontend SPA (Phase 3)
+
+| Route                                                  | Audience          | Notes                                                           |
+| ------------------------------------------------------ | ----------------- | --------------------------------------------------------------- |
+| `/`                                                    | Public            | Marketing homepage                                              |
+| `/about`                                               | Public            | Product overview                                                |
+| `/chat`                                                | Visitor           | Public chat widget; set `VITE_DEMO_OWNER_ID` or `?owner=<uuid>` |
+| `/login`, `/register`                                  | Owner             | Auth forms → JWT in `localStorage`                              |
+| `/forgot-password`, `/reset-password`, `/verify-email` | Owner             | Token flows                                                     |
+| `/dashboard`                                           | Owner (protected) | Owner shell; Weeks 12–14 add profile/config/notifications       |
+
+Env (Vite, prefixed `VITE_`):
+
+| Variable             | Purpose                                            |
+| -------------------- | -------------------------------------------------- |
+| `VITE_API_URL`       | Backend base URL (default `http://localhost:8000`) |
+| `VITE_DEMO_OWNER_ID` | Seed owner UUID for public demo chat               |
+| `VITE_DEBUG`         | Client debug flag                                  |
+
+```bash
+# After seed, copy owner id into .env.local:
+# VITE_DEMO_OWNER_ID=<uuid from owners table or /auth/me after login>
+pnpm nx serve frontend   # or: pnpm nx serve apps/frontend
+```
+
+CORS already allows `http://localhost:4200` via `CORS_ORIGINS`.
+
 ### Celery worker
 
 Background tasks (CV extraction, profile summary) run in a Celery worker
