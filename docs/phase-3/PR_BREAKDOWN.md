@@ -53,27 +53,27 @@ Buffer (end of Week 14 / Phase 4 planning):
 
 ## PR Breakdown Summary
 
-| PR #    | Title                                          | Epic     | Week | Est. lines | Priority | Status      |
-| ------- | ---------------------------------------------- | -------- | ---- | ---------- | -------- | ----------- |
-| **001** | App shell: router, API client, auth context    | FE-core  | 11   | 400–600    | P0       | Not started |
-| **002** | Auth pages (login / register / reset / verify) | FE-auth  | 11   | 400–600    | P0       | Not started |
-| **003** | Public homepage, navigation, about             | FE-pub   | 11   | 300–450    | P0       | Not started |
-| **004** | Public chat widget                             | FE-chat  | 11   | 400–600    | P0       | Not started |
-| **005** | Dashboard shell + protected routes + tests     | FE-dash  | 11   | 350–500    | P0       | Not started |
-| **006** | Dashboard layout polish (sidebar, user menu)   | FE-dash  | 12   | 300–450    | P0       | Not started |
-| **007** | Profile view + basic edit                      | FE-prof  | 12   | 350–500    | P0       | Not started |
-| **008** | CV upload UI + processing status               | FE-prof  | 12   | 400–600    | P0       | Not started |
-| **009** | Profile summary review / edit                  | FE-prof  | 12   | 300–450    | P0       | Not started |
-| **010** | Account settings                               | FE-set   | 12   | 250–400    | P1       | Not started |
-| **011** | Chat message UI components                     | FE-chat  | 13   | 350–500    | P0       | Not started |
-| **012** | SSE streaming for chat replies                 | FE-chat  | 13   | 350–550    | P0       | Not started |
-| **013** | Chat loading, errors, reconnection             | FE-chat  | 13   | 250–400    | P1       | Not started |
-| **014** | Chat responsive + accessibility                | FE-chat  | 13   | 250–400    | P1       | Not started |
-| **015** | Notification center UI                         | FE-notif | 14   | 350–500    | P0       | Not started |
-| **016** | Pushover setup UI                              | FE-notif | 14   | 250–400    | P0       | Not started |
-| **017** | Conversation browser (+ thin owner API)        | FE-conv  | 14   | 400–650    | P0       | Not started |
-| **018** | Digital twin config UI                         | FE-cfg   | 14   | 350–550    | P0       | Not started |
-| **019** | Phase 3 polish, smoke, docs                    | —        | 14   | 300–500    | P1       | Not started |
+| PR #    | Title                                          | Epic     | Week | Est. lines | Priority | Status                                                            |
+| ------- | ---------------------------------------------- | -------- | ---- | ---------- | -------- | ----------------------------------------------------------------- |
+| **001** | App shell: router, API client, auth context    | FE-core  | 11   | 400–600    | P0       | ✅ Merged ([#35](https://github.com/natank/digital-twin/pull/35)) |
+| **002** | Auth pages (login / register / reset / verify) | FE-auth  | 11   | 400–600    | P0       | ✅ Merged ([#36](https://github.com/natank/digital-twin/pull/36)) |
+| **003** | Public homepage, navigation, about             | FE-pub   | 11   | 300–450    | P0       | ✅ Merged ([#37](https://github.com/natank/digital-twin/pull/37)) |
+| **004** | Public chat widget                             | FE-chat  | 11   | 400–600    | P0       | ✅ Merged ([#38](https://github.com/natank/digital-twin/pull/38)) |
+| **005** | Dashboard shell + protected routes + tests     | FE-dash  | 11   | 350–500    | P0       | ✅ Merged ([#38](https://github.com/natank/digital-twin/pull/38)) |
+| **006** | Dashboard layout polish (sidebar, user menu)   | FE-dash  | 12   | 300–450    | P0       | Not started                                                       |
+| **007** | Profile view + basic edit                      | FE-prof  | 12   | 350–500    | P0       | Not started                                                       |
+| **008** | CV upload UI + processing status               | FE-prof  | 12   | 400–600    | P0       | Not started                                                       |
+| **009** | Profile summary review / edit                  | FE-prof  | 12   | 300–450    | P0       | Not started                                                       |
+| **010** | Account settings                               | FE-set   | 12   | 250–400    | P1       | Not started                                                       |
+| **011** | Chat message UI components                     | FE-chat  | 13   | 350–500    | P0       | Not started                                                       |
+| **012** | SSE streaming for chat replies                 | FE-chat  | 13   | 350–550    | P0       | Not started                                                       |
+| **013** | Chat loading, errors, reconnection             | FE-chat  | 13   | 250–400    | P1       | Not started                                                       |
+| **014** | Chat responsive + accessibility                | FE-chat  | 13   | 250–400    | P1       | Not started                                                       |
+| **015** | Notification center UI                         | FE-notif | 14   | 350–500    | P0       | Not started                                                       |
+| **016** | Pushover setup UI                              | FE-notif | 14   | 250–400    | P0       | Not started                                                       |
+| **017** | Conversation browser (+ thin owner API)        | FE-conv  | 14   | 400–650    | P0       | Not started                                                       |
+| **018** | Digital twin config UI                         | FE-cfg   | 14   | 350–550    | P0       | Not started                                                       |
+| **019** | Phase 3 polish, smoke, docs                    | —        | 14   | 300–500    | P1       | Not started                                                       |
 
 **Total scope (estimate):** ~6,300–9,700 lines across 19 PRs (TSX/CSS/tests; lockfile churn excluded).
 
