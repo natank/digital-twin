@@ -1,1 +1,39 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global base styles for the Digital Twin SPA */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    'Noto Sans',
+    sans-serif;
+  line-height: 1.5;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.page-loading {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+a {
+  color: #2563eb;
+}
