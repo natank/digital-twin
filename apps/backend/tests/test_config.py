@@ -154,3 +154,37 @@ def test_prompt_preview_uses_mock_llm(client: TestClient) -> None:
     data = response.json()["data"]
     assert "twin" in data["rendered_system_prompt"].lower()
     assert data["sample_reply"]
+
+
+def test_tone_style_topics_endpoints(client: TestClient) -> None:
+    token = _register_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    tone = client.put("/config/me/tone", headers=headers, json={"tone": "casual"})
+    assert tone.status_code == 200, tone.text
+    assert tone.json()["data"]["tone"] == "casual"
+    assert client.get("/config/me/tone", headers=headers).json()["data"]["tone"] == "casual"
+
+    style = client.put(
+        "/config/me/style",
+        headers=headers,
+        json={"response_length": "detailed"},
+    )
+    assert style.status_code == 200
+    assert style.json()["data"]["response_length"] == "detailed"
+
+    topics = client.put(
+        "/config/me/topics",
+        headers=headers,
+        json={
+            "allowed_topics": ["Go", "Kubernetes"],
+            "forbidden_topics": ["salary negotiation"],
+        },
+    )
+    assert topics.status_code == 200, topics.text
+    got = client.get("/config/me/topics", headers=headers).json()["data"]
+    assert got["allowed_topics"] == ["Go", "Kubernetes"]
+    assert got["forbidden_topics"] == ["salary negotiation"]
+
+    bad = client.put("/config/me/tone", headers=headers, json={"tone": "meh"})
+    assert bad.status_code == 422
