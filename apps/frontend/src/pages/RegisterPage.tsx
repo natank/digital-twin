@@ -96,6 +96,7 @@ export function RegisterPage(): JSX.Element {
         />
         <Input
           label="Password"
+          name="password"
           type="password"
           autoComplete="new-password"
           required

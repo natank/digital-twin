@@ -9,7 +9,7 @@ import { RegisterPage } from './RegisterPage';
 describe('RegisterPage', () => {
   it('rejects weak passwords', async () => {
     const user = userEvent.setup();
-    render(
+    const { container } = render(
       <MemoryRouter>
         <AuthProvider>
           <RegisterPage />
@@ -19,12 +19,10 @@ describe('RegisterPage', () => {
     await user.type(screen.getByLabelText(/first name/i), 'Ada');
     await user.type(screen.getByLabelText(/last name/i), 'Lovelace');
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
-    const passwordInput = document.querySelector('input[type="password"]');
+    const passwordInput = container.querySelector('input[name="password"]');
     expect(passwordInput).toBeTruthy();
     await user.type(passwordInput as HTMLInputElement, 'weak');
     await user.click(screen.getByRole('button', { name: /register/i }));
-    expect(
-      await screen.findByText(/at least 8 characters|uppercase|number|special/i),
-    ).toBeTruthy();
+    expect(await screen.findByText(/at least 8 characters|uppercase|number|special/i)).toBeTruthy();
   });
 });
