@@ -8,7 +8,8 @@ Default credentials (dev only):
 """
 
 from src.auth.security import hash_password
-from src.db.models import Owner, Profile
+from src.chat.prompts import DEFAULT_SYSTEM_PROMPT
+from src.db.models import DigitalTwinConfig, Owner, Profile, PromptVersion
 from src.db.session import SessionLocal
 
 SEED_EMAIL = "owner@example.com"
@@ -22,6 +23,16 @@ def seed() -> None:
         existing = db.query(Owner).filter(Owner.email == SEED_EMAIL).first()
         if existing:
             print(f"Seed owner already exists: {SEED_EMAIL}")
+            # Ensure twin config exists for demos
+            if (
+                db.query(DigitalTwinConfig)
+                .filter(DigitalTwinConfig.owner_id == existing.id)
+                .first()
+                is None
+            ):
+                _seed_config(db, existing)
+                db.commit()
+                print("Seeded DigitalTwinConfig for existing owner")
             return
 
         owner = Owner(
@@ -54,10 +65,34 @@ def seed() -> None:
             ),
         )
         db.add(owner)
+        db.flush()
+        _seed_config(db, owner)
         db.commit()
         print(f"Seeded owner: {SEED_EMAIL} (password: {SEED_PASSWORD})")
+        print("Seeded DigitalTwinConfig (tone=professional, sample topics)")
     finally:
         db.close()
+
+
+def _seed_config(db, owner: Owner) -> None:
+    cfg = DigitalTwinConfig(
+        owner_id=owner.id,
+        system_prompt=DEFAULT_SYSTEM_PROMPT,
+        tone="professional",
+        response_length="balanced",
+        allowed_topics=["Python", "FastAPI", "software architecture"],
+        forbidden_topics=["personal finances"],
+        brand_guidelines="Mention open-source contributions when relevant.",
+    )
+    db.add(cfg)
+    db.flush()
+    db.add(
+        PromptVersion(
+            config_id=cfg.id,
+            system_prompt=cfg.system_prompt,
+            version_number=1,
+        )
+    )
 
 
 if __name__ == "__main__":

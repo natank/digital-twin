@@ -172,6 +172,29 @@ Unit tests install `FakePushoverClient` via `set_pushover_client` — never call
 the live Pushover API in CI. Set a real `ENCRYPTION_KEY` (Fernet) before
 production; debug mode falls back to a deterministic dev key when empty.
 
+### Digital twin config (Phase 2)
+
+Owners customize prompt template, tone, response length, and topics via
+`/config/me` (and sub-routes). Chat loads config on each message; missing
+config falls back to the built-in default prompt.
+
+```bash
+curl localhost:8000/config/me -H "Authorization: Bearer $TOKEN"
+curl -X PUT localhost:8000/config/me/tone \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"tone":"friendly"}'
+```
+
+Placeholders in `system_prompt`: `{owner_name}`, `{profile_summary}`.
+
+Smoke scripts:
+
+```bash
+./scripts/smoke-phase1.sh
+./scripts/smoke-phase2.sh   # config + chat + notifications list
+```
+
 ### Database helpers
 
 ```bash
