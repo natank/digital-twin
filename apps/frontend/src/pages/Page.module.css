@@ -122,6 +122,37 @@
   max-width: 100%;
 }
 
+.metaList {
+  margin: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.metaList div {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.metaList dt {
+  margin: 0;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.metaList dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
 .formError {
   margin: 0;
   color: #b91c1c;
