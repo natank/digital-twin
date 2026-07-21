@@ -88,6 +88,9 @@ class Settings(BaseSettings):
     chat_rate_limit_window_seconds: int = 3600
     chat_sse_chunk_size: int = 48
 
+    # Config (digital twin customization)
+    config_system_prompt_max_chars: int = 20_000
+
     def cors_origin_list(self) -> list[str]:
         """Parse ``cors_origins`` into a list of non-empty origin strings."""
         return [part.strip() for part in self.cors_origins.split(",") if part.strip()]

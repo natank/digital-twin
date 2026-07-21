@@ -263,3 +263,57 @@ class PushoverConfig(Base):
     )
 
     owner: Mapped["Owner"] = relationship()
+
+
+class DigitalTwinConfig(Base):
+    """Per-owner digital twin configuration (system prompt, tone, topics)."""
+
+    __tablename__ = "digital_twin_configs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("owners.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+    # Template with optional {owner_name} / {profile_summary} placeholders
+    system_prompt: Mapped[str] = mapped_column(String, nullable=False)
+    # professional | casual | technical | friendly
+    tone: Mapped[str] = mapped_column(String(32), nullable=False, default="professional")
+    # concise | balanced | detailed
+    response_length: Mapped[str] = mapped_column(String(32), nullable=False, default="balanced")
+    allowed_topics: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    forbidden_topics: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    brand_guidelines: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    owner: Mapped["Owner"] = relationship()
+    prompt_versions: Mapped[list["PromptVersion"]] = relationship(
+        back_populates="config",
+        cascade="all, delete-orphan",
+        order_by="PromptVersion.version_number",
+    )
+
+
+class PromptVersion(Base):
+    """Append-only history of system prompt templates for a config."""
+
+    __tablename__ = "prompt_versions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    config_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("digital_twin_configs.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    system_prompt: Mapped[str] = mapped_column(String, nullable=False)
+    version_number: Mapped[int] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+
+    config: Mapped["DigitalTwinConfig"] = relationship(back_populates="prompt_versions")

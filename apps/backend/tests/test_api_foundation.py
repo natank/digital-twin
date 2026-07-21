@@ -20,6 +20,7 @@ def test_domain_module_status_routes_mounted() -> None:
         ("/profiles/status", "profiles"),
         ("/chat/status", "chat"),
         ("/notifications/status", "notifications"),
+        ("/config/status", "config"),
     ):
         response = client.get(path)
         assert response.status_code == 200, path
