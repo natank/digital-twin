@@ -7,8 +7,8 @@ import { ProtectedRoute } from '../lib/auth/ProtectedRoute';
 import { AboutPage } from '../pages/AboutPage';
 import { ChatPage } from '../pages/ChatPage';
 import { DashboardPage } from '../pages/DashboardPage';
-import { ComingSoonPage } from '../pages/dashboard/ComingSoonPage';
 import { ProfilePage } from '../pages/dashboard/ProfilePage';
+import { SettingsPage } from '../pages/dashboard/SettingsPage';
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
@@ -41,15 +41,7 @@ export function AppRoutes(): JSX.Element {
       >
         <Route index element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route
-          path="settings"
-          element={
-            <ComingSoonPage
-              title="Settings"
-              blurb="Account settings and password options — landing in PR-010."
-            />
-          }
-        />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
