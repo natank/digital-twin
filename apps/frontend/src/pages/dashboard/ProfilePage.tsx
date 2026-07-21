@@ -6,6 +6,7 @@ import { getMyProfile, updateMyProfile, type ProfileWire } from '../../lib/api/p
 import { useAuth } from '../../lib/auth/AuthContext';
 import styles from '../Page.module.css';
 import { CvUploadSection } from './CvUploadSection';
+import { SummarySection } from './SummarySection';
 
 export function ProfilePage(): JSX.Element {
   const { token } = useAuth();
@@ -109,6 +110,7 @@ export function ProfilePage(): JSX.Element {
         </p>
       )}
       {token && <CvUploadSection token={token} profile={profile} onProfileRefresh={setProfile} />}
+      {token && <SummarySection token={token} />}
       <form className={styles.formWide} onSubmit={(e) => void onSave(e)}>
         <Input
           label="Headline"
