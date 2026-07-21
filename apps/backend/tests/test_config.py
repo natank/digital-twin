@@ -95,3 +95,62 @@ def test_owners_isolated(client: TestClient) -> None:
     )
     data_b = client.get("/config/me", headers={"Authorization": f"Bearer {token_b}"}).json()["data"]
     assert data_b["tone"] == "professional"
+
+
+def test_system_prompt_versions_and_restore(client: TestClient) -> None:
+    token = _register_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    client.get("/config/me", headers=headers)
+
+    put1 = client.put(
+        "/config/me/system-prompt",
+        headers=headers,
+        json={"system_prompt": "PROMPT_V2 for {owner_name}"},
+    )
+    assert put1.status_code == 200, put1.text
+    assert put1.json()["data"]["version_number"] == 2
+
+    put2 = client.put(
+        "/config/me/system-prompt",
+        headers=headers,
+        json={"system_prompt": "PROMPT_V3 marker unique"},
+    )
+    assert put2.json()["data"]["version_number"] == 3
+
+    versions = client.get("/config/me/system-prompt/versions", headers=headers)
+    assert versions.status_code == 200
+    nums = [v["version_number"] for v in versions.json()["data"]["versions"]]
+    assert nums[0] == 3
+    assert 1 in nums and 2 in nums
+
+    restored = client.post("/config/me/system-prompt/restore/2", headers=headers)
+    assert restored.status_code == 200, restored.text
+    assert "PROMPT_V2" in restored.json()["data"]["system_prompt"]
+    assert restored.json()["data"]["version_number"] == 4
+
+
+def test_system_prompt_empty_rejected(client: TestClient) -> None:
+    token = _register_login(client)
+    response = client.put(
+        "/config/me/system-prompt",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"system_prompt": "   "},
+    )
+    assert response.status_code == 422
+
+
+def test_prompt_preview_uses_mock_llm(client: TestClient) -> None:
+    token = _register_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client.post(
+        "/config/me/system-prompt/preview",
+        headers=headers,
+        json={
+            "system_prompt": "You are twin for {owner_name}. Context: {profile_summary}",
+            "sample_question": "What do you do?",
+        },
+    )
+    assert response.status_code == 200, response.text
+    data = response.json()["data"]
+    assert "twin" in data["rendered_system_prompt"].lower()
+    assert data["sample_reply"]
