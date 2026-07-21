@@ -15,8 +15,11 @@ from src.config.schemas import (
     PromptPreviewResponse,
     PromptVersionListResponse,
     PromptVersionResponse,
+    StyleUpdateRequest,
     SystemPromptResponse,
     SystemPromptUpdateRequest,
+    ToneUpdateRequest,
+    TopicsUpdateRequest,
 )
 from src.config.service import (
     config_to_dict,
@@ -186,4 +189,84 @@ def preview_prompt(
             rendered_system_prompt=rendered,
             sample_reply=reply,
         )
+    )
+
+
+@router.get("/me/tone", response_model=ApiResponse[dict[str, str]])
+def get_tone(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict[str, str]]:
+    row = get_or_create_config(db, owner)
+    return ApiResponse.ok({"tone": row.tone})
+
+
+@router.put("/me/tone", response_model=ApiResponse[dict[str, str]])
+def put_tone(
+    body: ToneUpdateRequest,
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict[str, str]]:
+    row = update_config(db, owner, tone=body.tone, fields_set={"tone"})
+    return ApiResponse.ok({"tone": row.tone})
+
+
+@router.get("/me/style", response_model=ApiResponse[dict[str, str]])
+def get_style(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict[str, str]]:
+    row = get_or_create_config(db, owner)
+    return ApiResponse.ok({"response_length": row.response_length})
+
+
+@router.put("/me/style", response_model=ApiResponse[dict[str, str]])
+def put_style(
+    body: StyleUpdateRequest,
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict[str, str]]:
+    row = update_config(
+        db, owner, response_length=body.response_length, fields_set={"response_length"}
+    )
+    return ApiResponse.ok({"response_length": row.response_length})
+
+
+@router.get("/me/topics", response_model=ApiResponse[dict[str, list[str] | None]])
+def get_topics(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict[str, list[str] | None]]:
+    row = get_or_create_config(db, owner)
+    return ApiResponse.ok(
+        {
+            "allowed_topics": row.allowed_topics,
+            "forbidden_topics": row.forbidden_topics,
+        }
+    )
+
+
+@router.put("/me/topics", response_model=ApiResponse[dict[str, list[str] | None]])
+def put_topics(
+    body: TopicsUpdateRequest,
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict[str, list[str] | None]]:
+    fields: set[str] = set()
+    if "allowed_topics" in body.model_fields_set:
+        fields.add("allowed_topics")
+    if "forbidden_topics" in body.model_fields_set:
+        fields.add("forbidden_topics")
+    row = update_config(
+        db,
+        owner,
+        allowed_topics=body.allowed_topics,
+        forbidden_topics=body.forbidden_topics,
+        fields_set=fields or {"allowed_topics", "forbidden_topics"},
+    )
+    return ApiResponse.ok(
+        {
+            "allowed_topics": row.allowed_topics,
+            "forbidden_topics": row.forbidden_topics,
+        }
     )
