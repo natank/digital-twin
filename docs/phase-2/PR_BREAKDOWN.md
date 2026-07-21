@@ -47,11 +47,11 @@ Buffer (end of Week 10 / Phase 3 planning):
 | **003** | Pushover config setup                    | E8-S1    | 9    | 300–450    | P0       | ✅ Merged ([#26](https://github.com/natank/digital-twin/pull/26)) |
 | **004** | Pushover send + Celery retry             | E8-S2    | 9    | 350–550    | P0       | ✅ Merged ([#26](https://github.com/natank/digital-twin/pull/26)) |
 | **005** | Event wiring + preferences + test notify | E4/E8    | 9    | 350–500    | P0       | ✅ Merged ([#26](https://github.com/natank/digital-twin/pull/26)) |
-| **006** | Config models + owner CRUD               | E5       | 10   | 300–450    | P0       | Not started                                                       |
-| **007** | System prompt + versions + preview       | E5-S1    | 10   | 350–500    | P0       | Not started                                                       |
-| **008** | Tone, length, topic scope                | E5-S2/S3 | 10   | 250–400    | P1       | Not started                                                       |
-| **009** | Chat integration with Config             | E5+E3    | 10   | 300–450    | P0       | Not started                                                       |
-| **010** | Integration tests & API polish           | —        | 10   | 300–500    | P1       | Not started                                                       |
+| **006** | Config models + owner CRUD               | E5       | 10   | 300–450    | P0       | ✅ Merged ([#28](https://github.com/natank/digital-twin/pull/28)) |
+| **007** | System prompt + versions + preview       | E5-S1    | 10   | 350–500    | P0       | ✅ Merged ([#29](https://github.com/natank/digital-twin/pull/29)) |
+| **008** | Tone, length, topic scope                | E5-S2/S3 | 10   | 250–400    | P1       | ✅ Merged ([#30](https://github.com/natank/digital-twin/pull/30)) |
+| **009** | Chat integration with Config             | E5+E3    | 10   | 300–450    | P0       | ✅ Merged ([#31](https://github.com/natank/digital-twin/pull/31)) |
+| **010** | Integration tests & API polish           | —        | 10   | 300–500    | P1       | ✅ Merged ([#32](https://github.com/natank/digital-twin/pull/32)) |
 
 **Total scope (estimate):** ~3,000–4,700 lines across 10 PRs (application code + migrations + tests; lockfile churn excluded).
 
