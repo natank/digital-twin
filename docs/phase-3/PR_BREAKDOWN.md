@@ -60,11 +60,11 @@ Buffer (end of Week 14 / Phase 4 planning):
 | **003** | Public homepage, navigation, about             | FE-pub   | 11   | 300–450    | P0       | ✅ Merged ([#37](https://github.com/natank/digital-twin/pull/37)) |
 | **004** | Public chat widget                             | FE-chat  | 11   | 400–600    | P0       | ✅ Merged ([#38](https://github.com/natank/digital-twin/pull/38)) |
 | **005** | Dashboard shell + protected routes + tests     | FE-dash  | 11   | 350–500    | P0       | ✅ Merged ([#38](https://github.com/natank/digital-twin/pull/38)) |
-| **006** | Dashboard layout polish (sidebar, user menu)   | FE-dash  | 12   | 300–450    | P0       | Not started                                                       |
-| **007** | Profile view + basic edit                      | FE-prof  | 12   | 350–500    | P0       | Not started                                                       |
-| **008** | CV upload UI + processing status               | FE-prof  | 12   | 400–600    | P0       | Not started                                                       |
-| **009** | Profile summary review / edit                  | FE-prof  | 12   | 300–450    | P0       | Not started                                                       |
-| **010** | Account settings                               | FE-set   | 12   | 250–400    | P1       | Not started                                                       |
+| **006** | Dashboard layout polish (sidebar, user menu)   | FE-dash  | 12   | 300–450    | P0       | ✅ Merged ([40](https://github.com/natank/digital-twin/pull/40))  |
+| **007** | Profile view + basic edit                      | FE-prof  | 12   | 350–500    | P0       | ✅ Merged ([41](https://github.com/natank/digital-twin/pull/41))  |
+| **008** | CV upload UI + processing status               | FE-prof  | 12   | 400–600    | P0       | ✅ Merged ([42](https://github.com/natank/digital-twin/pull/42))  |
+| **009** | Profile summary review / edit                  | FE-prof  | 12   | 300–450    | P0       | ✅ Merged ([43](https://github.com/natank/digital-twin/pull/43))  |
+| **010** | Account settings                               | FE-set   | 12   | 250–400    | P1       | ✅ Merged ([44](https://github.com/natank/digital-twin/pull/44))  |
 | **011** | Chat message UI components                     | FE-chat  | 13   | 350–500    | P0       | Not started                                                       |
 | **012** | SSE streaming for chat replies                 | FE-chat  | 13   | 350–550    | P0       | Not started                                                       |
 | **013** | Chat loading, errors, reconnection             | FE-chat  | 13   | 250–400    | P1       | Not started                                                       |
