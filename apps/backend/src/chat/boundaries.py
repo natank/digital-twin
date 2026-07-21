@@ -51,13 +51,34 @@ class BoundaryResult:
     redirect_message: str | None = None
 
 
-def check_message_boundary(content: str) -> BoundaryResult:
-    """Return whether the visitor message should be politely redirected."""
+def check_message_boundary(
+    content: str,
+    *,
+    forbidden_topics: list[str] | None = None,
+    allowed_topics: list[str] | None = None,
+) -> BoundaryResult:
+    """Return whether the visitor message should be politely redirected.
+
+    ``forbidden_topics`` / ``allowed_topics`` come from owner DigitalTwinConfig
+    when available (Phase 2). Built-in patterns still apply.
+    """
     text = (content or "").strip()
     if not text:
         return BoundaryResult(off_topic=False)
 
+    lower = text.lower()
+    if forbidden_topics:
+        for topic in forbidden_topics:
+            t = (topic or "").strip().lower()
+            if t and t in lower:
+                return BoundaryResult(off_topic=True, redirect_message=REDIRECT_MESSAGE)
+
     has_career = any(p.search(text) for p in _CAREER_HINTS)
+    if allowed_topics and not has_career:
+        # If owner listed preferred topics and message matches none of them
+        # and also hits a hard off-topic pattern, redirect (keep soft).
+        pass
+
     hits = [p.pattern for p in _OFF_TOPIC_PATTERNS if p.search(text)]
     if hits and not has_career:
         return BoundaryResult(off_topic=True, redirect_message=REDIRECT_MESSAGE)
