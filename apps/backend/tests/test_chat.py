@@ -178,6 +178,68 @@ def test_sse_stream_post(client: TestClient, db_session: Session) -> None:
     assert "Mock twin reply" in body
 
 
+def test_chat_uses_owner_config_prompt(
+    client: TestClient, db_session: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from src.llm import claude as claude_mod
+
+    captured: dict[str, str] = {}
+
+    def _capture(system_prompt: str, messages: list) -> tuple[str, int | None]:
+        captured["system"] = system_prompt
+        return ("ok", 1)
+
+    claude_mod.set_chat_reply_generator(_capture)
+    try:
+        owner = _seed_owner(db_session, f"cfgchat-{uuid.uuid4().hex[:8]}@ex.com")
+        # Login as owner to set config
+        client.post(
+            "/auth/register",
+            json={
+                "email": f"login-{uuid.uuid4().hex[:8]}@ex.com",
+                "password": STRONG_PASSWORD,
+                "first_name": "X",
+                "last_name": "Y",
+            },
+        )
+        # Directly set config for seeded owner via service
+        from src.config.service import get_or_create_config, update_config
+
+        cfg = get_or_create_config(db_session, owner)
+        update_config(
+            db_session,
+            owner,
+            system_prompt="MARKER_UNIQUE_PROMPT for {owner_name}. Context: {profile_summary}",
+            tone="technical",
+            forbidden_topics=["cryptocurrency trading"],
+            fields_set={"system_prompt", "tone", "forbidden_topics"},
+        )
+        assert cfg is not None
+
+        sid = client.post("/chat/sessions", json={"owner_id": str(owner.id)}).json()["data"][
+            "session_id"
+        ]
+        resp = client.post(
+            f"/chat/sessions/{sid}/messages",
+            json={"content": "What is your engineering experience?"},
+        )
+        assert resp.status_code == 200, resp.text
+        assert "MARKER_UNIQUE_PROMPT" in captured.get("system", "")
+        assert "technical" in captured.get("system", "").lower() or "Tone" in captured.get(
+            "system", ""
+        )
+
+        # Forbidden topic should redirect without LLM overwrite of capture necessarily
+        r2 = client.post(
+            f"/chat/sessions/{sid}/messages",
+            json={"content": "Tell me about cryptocurrency trading strategies"},
+        )
+        assert r2.status_code == 200
+        assert r2.json()["data"]["boundary_redirect"] is True
+    finally:
+        claude_mod.set_chat_reply_generator(None)
+
+
 def test_chat_rate_limit_memory() -> None:
     settings = Settings(chat_rate_limit_per_hour=3, chat_rate_limit_window_seconds=3600)
     limiter = ChatRateLimiter.__new__(ChatRateLimiter)

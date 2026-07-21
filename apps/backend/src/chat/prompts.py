@@ -1,4 +1,4 @@
-"""Default digital-twin system prompt (Config Service lands in Phase 2)."""
+"""Default digital-twin system prompt and rendering helpers."""
 
 from __future__ import annotations
 
@@ -35,6 +35,19 @@ redirect to professional topics
 - Ask clarifying questions if needed
 """
 
+_TONE_LINES = {
+    "professional": "Use a professional, polished voice suitable for clients and employers.",
+    "casual": "Use a casual, approachable conversational style while staying respectful.",
+    "technical": "Use a technical, precise voice with concrete engineering detail when relevant.",
+    "friendly": "Use a warm, friendly tone while remaining professionally appropriate.",
+}
+
+_LENGTH_LINES = {
+    "concise": "Prefer concise answers (a few short paragraphs or less).",
+    "balanced": "Use a balanced response length — informative but not verbose.",
+    "detailed": "Provide detailed answers with examples when helpful (still under 500 words).",
+}
+
 
 def format_profile_summary(summary: dict[str, Any] | None, *, skills: list | None = None) -> str:
     """Render profile_summary JSON into prompt text."""
@@ -65,14 +78,62 @@ def format_profile_summary(summary: dict[str, Any] | None, *, skills: list | Non
     return "\n".join(parts)
 
 
-def build_system_prompt(
+def render_prompt_template(
+    template: str,
     *,
     owner_name: str,
     profile_summary: dict[str, Any] | None,
     skills: list | None = None,
 ) -> str:
-    """Fill the default twin prompt with owner context."""
-    return DEFAULT_SYSTEM_PROMPT.format(
-        owner_name=owner_name or "the professional",
-        profile_summary=format_profile_summary(profile_summary, skills=skills),
+    """Fill {owner_name} and {profile_summary} placeholders safely."""
+    name = owner_name or "the professional"
+    summary = format_profile_summary(profile_summary, skills=skills)
+    try:
+        return template.format(owner_name=name, profile_summary=summary)
+    except (KeyError, ValueError):
+        return template.replace("{owner_name}", name).replace("{profile_summary}", summary)
+
+
+def build_system_prompt(
+    *,
+    owner_name: str,
+    profile_summary: dict[str, Any] | None,
+    skills: list | None = None,
+    template: str | None = None,
+    tone: str | None = None,
+    response_length: str | None = None,
+    brand_guidelines: str | None = None,
+    allowed_topics: list[str] | None = None,
+    forbidden_topics: list[str] | None = None,
+) -> str:
+    """Render twin system prompt from template + style/topic overlays."""
+    base = render_prompt_template(
+        template or DEFAULT_SYSTEM_PROMPT,
+        owner_name=owner_name,
+        profile_summary=profile_summary,
+        skills=skills,
     )
+    extras: list[str] = []
+    if tone:
+        line = _TONE_LINES.get(tone.lower())
+        if line:
+            extras.append(f"### Tone\n{line}")
+    if response_length:
+        line = _LENGTH_LINES.get(response_length.lower())
+        if line:
+            extras.append(f"### Response length\n{line}")
+    if brand_guidelines and brand_guidelines.strip():
+        extras.append(f"### Brand guidelines\n{brand_guidelines.strip()}")
+    if allowed_topics:
+        extras.append(
+            "### Preferred topics\nPrefer discussing: "
+            + ", ".join(str(t) for t in allowed_topics[:40])
+        )
+    if forbidden_topics:
+        extras.append(
+            "### Forbidden topics\nDo not discuss: "
+            + ", ".join(str(t) for t in forbidden_topics[:40])
+        )
+    if extras:
+        return base.rstrip() + "\n\n" + "\n\n".join(extras)
+    return base

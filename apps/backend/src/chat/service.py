@@ -208,7 +208,19 @@ def post_message(
     db.commit()
     db.refresh(visitor_msg)
 
-    boundary = check_message_boundary(text)
+    # Load owner config when present; chat must work without it (Phase 1 fallback).
+    twin_cfg = None
+    try:
+        from src.config.service import get_or_create_config
+
+        twin_cfg = get_or_create_config(db, owner)
+    except Exception:  # noqa: BLE001
+        logger.exception("failed to load twin config owner=%s", owner.id)
+        twin_cfg = None
+
+    forbidden = list(twin_cfg.forbidden_topics or []) if twin_cfg else None
+    allowed = list(twin_cfg.allowed_topics or []) if twin_cfg else None
+    boundary = check_message_boundary(text, forbidden_topics=forbidden, allowed_topics=allowed)
     boundary_redirect = False
     tokens_used: int | None = None
 
@@ -221,6 +233,12 @@ def post_message(
             owner_name=_owner_display_name(owner),
             profile_summary=profile.profile_summary if profile else None,
             skills=profile.skills if profile else None,
+            template=twin_cfg.system_prompt if twin_cfg else None,
+            tone=twin_cfg.tone if twin_cfg else None,
+            response_length=twin_cfg.response_length if twin_cfg else None,
+            brand_guidelines=twin_cfg.brand_guidelines if twin_cfg else None,
+            allowed_topics=allowed,
+            forbidden_topics=forbidden,
         )
         history = _history_for_llm(db, session)
         try:
