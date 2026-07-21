@@ -1,0 +1,87 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.page h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.25;
+}
+
+.lead {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #475569;
+  max-width: 42rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.primaryLink,
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.primaryLink {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.primaryLink:hover {
+  background: #1d4ed8;
+}
+
+.secondaryLink {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+}
+
+.secondaryLink:hover {
+  background: #f8fafc;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 24rem;
+}
+
+.formError {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.formSuccess {
+  margin: 0;
+  color: #047857;
+  font-size: 0.9rem;
+}
+
+.formFooter {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.formFooter a {
+  color: #2563eb;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 0.9rem;
+}

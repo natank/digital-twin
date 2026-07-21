@@ -1,14 +1,16 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.css';
 import type { JSX } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 
-import NxWelcome from './nx-welcome';
+import { AuthProvider } from '../lib/auth/AuthContext';
+import { AppRoutes } from './routes';
 
 export function App(): JSX.Element {
   return (
-    <div>
-      <NxWelcome title="frontend" />
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
