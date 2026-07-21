@@ -5,6 +5,7 @@ import { ApiClientError } from '../../lib/api/client';
 import { getMyProfile, updateMyProfile, type ProfileWire } from '../../lib/api/profiles';
 import { useAuth } from '../../lib/auth/AuthContext';
 import styles from '../Page.module.css';
+import { CvUploadSection } from './CvUploadSection';
 
 export function ProfilePage(): JSX.Element {
   const { token } = useAuth();
@@ -99,8 +100,7 @@ export function ProfilePage(): JSX.Element {
     <section className={styles.page}>
       <h1>Profile</h1>
       <p className={styles.lead}>
-        Update how your digital twin presents your professional background. CV upload and AI summary
-        tools are on this page in follow-up PRs.
+        Update how your digital twin presents your professional background.
       </p>
       {profile && (
         <p className={styles.muted}>
@@ -108,6 +108,7 @@ export function ProfilePage(): JSX.Element {
           {profile.has_extracted_text ? ' · text extracted' : ''}
         </p>
       )}
+      {token && <CvUploadSection token={token} profile={profile} onProfileRefresh={setProfile} />}
       <form className={styles.formWide} onSubmit={(e) => void onSave(e)}>
         <Input
           label="Headline"
