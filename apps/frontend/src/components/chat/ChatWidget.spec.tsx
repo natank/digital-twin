@@ -4,6 +4,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ChatWidget } from './ChatWidget';
 
+function sseStream(events: string): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(events));
+      controller.close();
+    },
+  });
+}
+
 describe('ChatWidget', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -14,11 +24,11 @@ describe('ChatWidget', () => {
     expect(screen.getByText(/VITE_DEMO_OWNER_ID/i)).toBeTruthy();
   });
 
-  it('creates a session and exchanges a message', async () => {
+  it('creates a session and streams a reply', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.includes('/chat/sessions') && init?.method === 'POST' && !url.includes('/messages')) {
+      if (url.includes('/chat/sessions') && init?.method === 'POST' && !url.includes('/sse')) {
         return {
           ok: true,
           status: 201,
@@ -37,31 +47,23 @@ describe('ChatWidget', () => {
           }),
         };
       }
-      if (url.includes('/messages')) {
+      if (url.includes('/sse/') && init?.method === 'POST') {
         return {
           ok: true,
           status: 200,
-          statusText: 'OK',
-          json: async () => ({
-            status: 'success',
-            data: {
-              visitor_message: {
-                id: 'm1',
-                sender: 'visitor',
-                content: 'Hello',
-              },
-              reply: {
-                id: 'm2',
-                sender: 'ai',
-                content: 'Hi there!',
-              },
-              session_id: 'sess-1',
-              expires_at: '2099-01-01T00:00:00Z',
-              boundary_redirect: false,
-            },
-            error: null,
-            meta: { timestamp: 't', request_id: null },
-          }),
+          body: sseStream(
+            [
+              'event: meta',
+              'data: {"boundary_redirect": false}',
+              '',
+              'event: token',
+              'data: Hi there!',
+              '',
+              'event: done',
+              'data: {"status":"completed"}',
+              '',
+            ].join('\n'),
+          ),
         };
       }
       throw new Error(`Unexpected fetch ${url}`);
