@@ -257,3 +257,48 @@ def test_chat_rate_limit_memory() -> None:
         "rate limit" in str(exc.value).lower()
         or getattr(exc.value, "error_code", "") == "RATE_LIMIT_001"
     )
+
+
+def test_owner_conversation_list_and_detail(client: TestClient, db_session: Session) -> None:
+    email = f"owner-conv-{uuid.uuid4().hex[:8]}@example.com"
+    owner = _seed_owner(db_session, email)
+    # Login as owner
+    client.post(
+        "/auth/register",
+        json={
+            "email": f"reg-{email}",
+            "password": STRONG_PASSWORD,
+            "first_name": "A",
+            "last_name": "B",
+        },
+    )
+    # Use seed owner credentials — need password we know; seed uses STRONG_PASSWORD
+    login = client.post("/auth/login", json={"email": email, "password": STRONG_PASSWORD})
+    assert login.status_code == 200, login.text
+    token = login.json()["data"]["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    sid = client.post("/chat/sessions", json={"owner_id": str(owner.id)}).json()["data"][
+        "session_id"
+    ]
+    client.post(f"/chat/sessions/{sid}/messages", json={"content": "What is your experience?"})
+
+    listed = client.get("/chat/me/conversations", headers=headers)
+    assert listed.status_code == 200, listed.text
+    items = listed.json()["data"]["items"]
+    assert any(i["session_id"] == sid for i in items)
+    row = next(i for i in items if i["session_id"] == sid)
+    assert row["message_count"] >= 2
+    assert row["preview"]
+
+    detail = client.get(f"/chat/me/conversations/{sid}", headers=headers)
+    assert detail.status_code == 200, detail.text
+    assert len(detail.json()["data"]["messages"]) >= 2
+
+    flagged = client.post(
+        f"/chat/me/conversations/{sid}/flag",
+        headers=headers,
+        json={"flagged": True, "reason": "review"},
+    )
+    assert flagged.status_code == 200, flagged.text
+    assert flagged.json()["data"]["flagged"] is True

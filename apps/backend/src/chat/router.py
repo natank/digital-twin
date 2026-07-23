@@ -5,40 +5,129 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 from backend_shared.schemas import ApiResponse
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from src.api.deps import get_db
+from src.api.deps import get_current_owner, get_db
 from src.chat.rate_limit import get_chat_rate_limiter
 from src.chat.schemas import (
     ChatSessionResponse,
     CreateSessionRequest,
     MessageListResponse,
     MessageResponse,
+    OwnerConversationDetailResponse,
+    OwnerConversationListResponse,
+    OwnerConversationSummary,
     SendMessageRequest,
     SendMessageResponse,
 )
 from src.chat.service import (
     create_session,
     delete_session,
+    get_owner_conversation,
     get_session_by_public_id,
     list_messages,
+    list_owner_conversations,
     message_to_dict,
     post_message,
     session_to_response_dict,
+    set_owner_conversation_flag,
     stream_reply_chunks,
     touch_session,
 )
+from src.db.models import Owner
 from src.settings import get_settings
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
+
+
+class FlagConversationRequest(BaseModel):
+    flagged: bool = True
+    reason: str | None = Field(default=None, max_length=512)
 
 
 @router.get("/status")
 def chat_module_status() -> dict[str, str]:
     """Lightweight marker that the chat module router is mounted."""
     return {"module": "chat", "status": "ready"}
+
+
+@router.get(
+    "/me/conversations",
+    response_model=ApiResponse[OwnerConversationListResponse],
+)
+def list_my_conversations(
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> ApiResponse[OwnerConversationListResponse]:
+    """Owner dashboard: list visitor chat sessions."""
+    rows, total = list_owner_conversations(db, owner, limit=limit, offset=offset)
+    return ApiResponse.ok(
+        OwnerConversationListResponse(
+            items=[OwnerConversationSummary.model_validate(r) for r in rows],
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+    )
+
+
+@router.get(
+    "/me/conversations/{session_id}",
+    response_model=ApiResponse[OwnerConversationDetailResponse],
+)
+def get_my_conversation(
+    session_id: str,
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[OwnerConversationDetailResponse]:
+    """Owner dashboard: full transcript for one session."""
+    session, messages = get_owner_conversation(db, owner, session_id)
+    ctx = session.context
+    return ApiResponse.ok(
+        OwnerConversationDetailResponse(
+            session_id=session.public_id,
+            created_at=session.created_at,
+            expires_at=session.expires_at,
+            flagged=bool(ctx.flagged) if ctx else False,
+            flag_reason=ctx.flag_reason if ctx else None,
+            messages=[MessageResponse.model_validate(message_to_dict(m)) for m in messages],
+        )
+    )
+
+
+@router.post(
+    "/me/conversations/{session_id}/flag",
+    response_model=ApiResponse[OwnerConversationSummary],
+)
+def flag_my_conversation(
+    session_id: str,
+    body: FlagConversationRequest,
+    owner: Owner = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+) -> ApiResponse[OwnerConversationSummary]:
+    """Flag or unflag a conversation from the owner dashboard."""
+    session = set_owner_conversation_flag(
+        db, owner, session_id, flagged=body.flagged, reason=body.reason
+    )
+    all_rows, _ = list_owner_conversations(db, owner, limit=100, offset=0)
+    match = next((r for r in all_rows if r["session_id"] == session.public_id), None)
+    if match is None:
+        match = {
+            "session_id": session.public_id,
+            "created_at": session.created_at,
+            "expires_at": session.expires_at,
+            "flagged": body.flagged,
+            "flag_reason": body.reason if body.flagged else None,
+            "message_count": 0,
+            "preview": None,
+            "last_message_at": None,
+        }
+    return ApiResponse.ok(OwnerConversationSummary.model_validate(match))
 
 
 @router.post("/sessions", response_model=ApiResponse[ChatSessionResponse], status_code=201)

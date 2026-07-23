@@ -47,3 +47,32 @@ class SendMessageResponse(BaseSchema):
 class MessageListResponse(BaseSchema):
     session_id: str
     messages: list[MessageResponse]
+
+
+class OwnerConversationSummary(BaseSchema):
+    """Owner dashboard row for a visitor chat session."""
+
+    session_id: str
+    created_at: datetime | None = None
+    expires_at: datetime | None = None
+    flagged: bool = False
+    flag_reason: str | None = None
+    message_count: int = 0
+    preview: str | None = None
+    last_message_at: datetime | None = None
+
+
+class OwnerConversationListResponse(BaseSchema):
+    items: list[OwnerConversationSummary]
+    total: int
+    limit: int
+    offset: int
+
+
+class OwnerConversationDetailResponse(BaseSchema):
+    session_id: str
+    created_at: datetime | None = None
+    expires_at: datetime | None = None
+    flagged: bool = False
+    flag_reason: str | None = None
+    messages: list[MessageResponse]

@@ -133,6 +133,86 @@ def list_messages(db: Session, public_id: str) -> list[ChatMessage]:
     )
 
 
+def list_owner_conversations(
+    db: Session,
+    owner: Owner,
+    *,
+    limit: int = 50,
+    offset: int = 0,
+) -> tuple[list[dict[str, Any]], int]:
+    """Return (summary rows, total) for the owner's visitor sessions."""
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
+    base = db.query(ChatSession).filter(ChatSession.owner_id == owner.id)
+    total = base.count()
+    sessions = (
+        base.options(joinedload(ChatSession.context), joinedload(ChatSession.messages))
+        .order_by(ChatSession.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+    rows: list[dict[str, Any]] = []
+    for s in sessions:
+        msgs = sorted(s.messages or [], key=lambda m: m.created_at or _utcnow())
+        preview = None
+        last_at = None
+        if msgs:
+            # Prefer last visitor message for preview.
+            visitor = [m for m in msgs if m.sender == "visitor"]
+            pick = visitor[-1] if visitor else msgs[-1]
+            preview = (pick.content or "")[:160]
+            last_at = msgs[-1].created_at
+        ctx = s.context
+        rows.append(
+            {
+                "session_id": s.public_id,
+                "created_at": s.created_at,
+                "expires_at": s.expires_at,
+                "flagged": bool(ctx.flagged) if ctx else False,
+                "flag_reason": ctx.flag_reason if ctx else None,
+                "message_count": len(msgs),
+                "preview": preview,
+                "last_message_at": last_at,
+            }
+        )
+    return rows, total
+
+
+def get_owner_conversation(
+    db: Session, owner: Owner, public_id: str
+) -> tuple[ChatSession, list[ChatMessage]]:
+    """Load a session owned by the owner with messages (includes expired)."""
+    session = (
+        db.query(ChatSession)
+        .options(joinedload(ChatSession.context))
+        .filter(ChatSession.public_id == public_id, ChatSession.owner_id == owner.id)
+        .first()
+    )
+    if session is None:
+        raise NotFoundError("Chat session not found")
+    messages = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.session_id == session.id)
+        .order_by(ChatMessage.created_at.asc())
+        .all()
+    )
+    return session, messages
+
+
+def set_owner_conversation_flag(
+    db: Session, owner: Owner, public_id: str, *, flagged: bool, reason: str | None = None
+) -> ChatSession:
+    session, _ = get_owner_conversation(db, owner, public_id)
+    ctx = _ensure_context(db, session)
+    ctx.flagged = flagged
+    ctx.flag_reason = reason if flagged else None
+    db.add(ctx)
+    db.commit()
+    db.refresh(session)
+    return session
+
+
 def _ensure_context(db: Session, session: ChatSession) -> ConversationContext:
     if session.context is not None:
         return session.context
