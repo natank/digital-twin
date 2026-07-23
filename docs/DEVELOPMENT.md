@@ -80,7 +80,13 @@ pnpm nx run apps/backend:worker  # Celery worker (CV processing, etc.)
 | `/chat`                                                | Visitor           | Public chat widget; set `VITE_DEMO_OWNER_ID` or `?owner=<uuid>` |
 | `/login`, `/register`                                  | Owner             | Auth forms → JWT in `localStorage`                              |
 | `/forgot-password`, `/reset-password`, `/verify-email` | Owner             | Token flows                                                     |
-| `/dashboard`                                           | Owner (protected) | Owner shell; Weeks 12–14 add profile/config/notifications       |
+| `/dashboard`                                           | Owner (protected) | Overview shell                                                  |
+| `/dashboard/profile`                                   | Owner (protected) | Profile, CV upload, summary                                     |
+| `/dashboard/conversations`                             | Owner (protected) | Visitor chat browser                                            |
+| `/dashboard/notifications`                             | Owner (protected) | In-app alerts + unread badge                                    |
+| `/dashboard/notifications/pushover`                    | Owner (protected) | Pushover user key setup                                         |
+| `/dashboard/config`                                    | Owner (protected) | Twin prompt / tone / topics                                     |
+| `/dashboard/settings`                                  | Owner (protected) | Account + password reset email                                  |
 
 Env (Vite, prefixed `VITE_`):
 
@@ -97,6 +103,14 @@ pnpm nx serve frontend   # or: pnpm nx serve apps/frontend
 ```
 
 CORS already allows `http://localhost:4200` via `CORS_ORIGINS`.
+
+Smoke scripts:
+
+```bash
+./scripts/smoke-phase1.sh
+./scripts/smoke-phase2.sh
+./scripts/smoke-phase3.sh   # auth + config + profile + notify + chat + optional FE
+```
 
 ### Celery worker
 

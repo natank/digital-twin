@@ -69,10 +69,10 @@ Buffer (end of Week 14 / Phase 4 planning):
 | **012** | SSE streaming for chat replies                 | FE-chat  | 13   | 350–550    | P0       | ✅ Merged ([47](https://github.com/natank/digital-twin/pull/47))  |
 | **013** | Chat loading, errors, reconnection             | FE-chat  | 13   | 250–400    | P1       | ✅ Merged ([48](https://github.com/natank/digital-twin/pull/48))  |
 | **014** | Chat responsive + accessibility                | FE-chat  | 13   | 250–400    | P1       | ✅ Merged ([49](https://github.com/natank/digital-twin/pull/49))  |
-| **015** | Notification center UI                         | FE-notif | 14   | 350–500    | P0       | Not started                                                       |
-| **016** | Pushover setup UI                              | FE-notif | 14   | 250–400    | P0       | Not started                                                       |
-| **017** | Conversation browser (+ thin owner API)        | FE-conv  | 14   | 400–650    | P0       | Not started                                                       |
-| **018** | Digital twin config UI                         | FE-cfg   | 14   | 350–550    | P0       | Not started                                                       |
+| **015** | Notification center UI                         | FE-notif | 14   | 350–500    | P0       | ✅ Merged ([51](https://github.com/natank/digital-twin/pull/51))  |
+| **016** | Pushover setup UI                              | FE-notif | 14   | 250–400    | P0       | ✅ Merged ([52](https://github.com/natank/digital-twin/pull/52))  |
+| **017** | Conversation browser (+ thin owner API)        | FE-conv  | 14   | 400–650    | P0       | ✅ Merged ([53](https://github.com/natank/digital-twin/pull/53))  |
+| **018** | Digital twin config UI                         | FE-cfg   | 14   | 350–550    | P0       | ✅ Merged ([54](https://github.com/natank/digital-twin/pull/54))  |
 | **019** | Phase 3 polish, smoke, docs                    | —        | 14   | 300–500    | P1       | Not started                                                       |
 
 **Total scope (estimate):** ~6,300–9,700 lines across 19 PRs (TSX/CSS/tests; lockfile churn excluded).
