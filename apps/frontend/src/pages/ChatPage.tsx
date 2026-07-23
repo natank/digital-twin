@@ -12,8 +12,8 @@ export function ChatPage(): JSX.Element {
     <section className={styles.page}>
       <h1>Chat</h1>
       <p className={styles.lead}>
-        Talk to a digital twin as a visitor. No account required. Replies use the backend Chat API
-        (non-streaming for Week 11; SSE in Week 13).
+        Talk to a digital twin as a visitor. No account required. Replies stream over SSE from the
+        Chat API.
       </p>
       <ChatWidget ownerId={ownerFromQuery} />
     </section>
