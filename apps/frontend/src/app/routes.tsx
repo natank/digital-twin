@@ -7,6 +7,7 @@ import { ProtectedRoute } from '../lib/auth/ProtectedRoute';
 import { AboutPage } from '../pages/AboutPage';
 import { ChatPage } from '../pages/ChatPage';
 import { DashboardPage } from '../pages/DashboardPage';
+import { ConfigPage } from '../pages/dashboard/ConfigPage';
 import { ConversationsPage } from '../pages/dashboard/ConversationsPage';
 import { NotificationsPage } from '../pages/dashboard/NotificationsPage';
 import { PushoverPage } from '../pages/dashboard/PushoverPage';
@@ -48,6 +49,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="notifications/pushover" element={<PushoverPage />} />
         <Route path="conversations" element={<ConversationsPage />} />
         <Route path="conversations/:sessionId" element={<ConversationsPage />} />
+        <Route path="config" element={<ConfigPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 

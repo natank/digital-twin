@@ -29,6 +29,10 @@ export function DashboardPage(): JSX.Element {
           <h2>Conversations</h2>
           <p>Browse visitor chat transcripts.</p>
         </Link>
+        <Link className={styles.card} to="/dashboard/config">
+          <h2>Twin config</h2>
+          <p>Prompt, tone, and topic boundaries.</p>
+        </Link>
         <Link className={styles.card} to="/dashboard/notifications">
           <h2>Notifications</h2>
           <p>In-app alerts and mark-as-read.</p>
