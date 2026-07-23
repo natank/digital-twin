@@ -1,3 +1,4 @@
+export { prefersReducedMotion, scrollBehavior } from './chatA11y';
 export { ChatComposer } from './ChatComposer';
 export type { ChatComposerProps } from './ChatComposer';
 export { ChatErrorBanner } from './ChatErrorBanner';

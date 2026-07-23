@@ -9,12 +9,15 @@ export function ChatPage(): JSX.Element {
   const ownerFromQuery = params.get('owner') ?? undefined;
 
   return (
-    <section className={styles.page}>
-      <h1>Chat</h1>
+    <section className={`${styles.page} ${styles.chatPage}`} aria-labelledby="chat-page-heading">
+      <h1 id="chat-page-heading">Chat</h1>
       <p className={styles.lead}>
         Talk to a digital twin as a visitor. No account required. Replies stream over SSE from the
         Chat API.
       </p>
+      <a className={styles.skipToChat} href="#chat-composer-input">
+        Skip to message input
+      </a>
       <ChatWidget ownerId={ownerFromQuery} />
     </section>
   );
