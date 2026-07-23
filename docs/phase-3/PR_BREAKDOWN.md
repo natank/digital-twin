@@ -65,10 +65,10 @@ Buffer (end of Week 14 / Phase 4 planning):
 | **008** | CV upload UI + processing status               | FE-prof  | 12   | 400–600    | P0       | ✅ Merged ([42](https://github.com/natank/digital-twin/pull/42))  |
 | **009** | Profile summary review / edit                  | FE-prof  | 12   | 300–450    | P0       | ✅ Merged ([43](https://github.com/natank/digital-twin/pull/43))  |
 | **010** | Account settings                               | FE-set   | 12   | 250–400    | P1       | ✅ Merged ([44](https://github.com/natank/digital-twin/pull/44))  |
-| **011** | Chat message UI components                     | FE-chat  | 13   | 350–500    | P0       | Not started                                                       |
-| **012** | SSE streaming for chat replies                 | FE-chat  | 13   | 350–550    | P0       | Not started                                                       |
-| **013** | Chat loading, errors, reconnection             | FE-chat  | 13   | 250–400    | P1       | Not started                                                       |
-| **014** | Chat responsive + accessibility                | FE-chat  | 13   | 250–400    | P1       | Not started                                                       |
+| **011** | Chat message UI components                     | FE-chat  | 13   | 350–500    | P0       | ✅ Merged ([46](https://github.com/natank/digital-twin/pull/46))  |
+| **012** | SSE streaming for chat replies                 | FE-chat  | 13   | 350–550    | P0       | ✅ Merged ([47](https://github.com/natank/digital-twin/pull/47))  |
+| **013** | Chat loading, errors, reconnection             | FE-chat  | 13   | 250–400    | P1       | ✅ Merged ([48](https://github.com/natank/digital-twin/pull/48))  |
+| **014** | Chat responsive + accessibility                | FE-chat  | 13   | 250–400    | P1       | ✅ Merged ([49](https://github.com/natank/digital-twin/pull/49))  |
 | **015** | Notification center UI                         | FE-notif | 14   | 350–500    | P0       | Not started                                                       |
 | **016** | Pushover setup UI                              | FE-notif | 14   | 250–400    | P0       | Not started                                                       |
 | **017** | Conversation browser (+ thin owner API)        | FE-conv  | 14   | 400–650    | P0       | Not started                                                       |
