@@ -7,6 +7,7 @@ import { ProtectedRoute } from '../lib/auth/ProtectedRoute';
 import { AboutPage } from '../pages/AboutPage';
 import { ChatPage } from '../pages/ChatPage';
 import { DashboardPage } from '../pages/DashboardPage';
+import { NotificationsPage } from '../pages/dashboard/NotificationsPage';
 import { ProfilePage } from '../pages/dashboard/ProfilePage';
 import { SettingsPage } from '../pages/dashboard/SettingsPage';
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
@@ -41,6 +42,7 @@ export function AppRoutes(): JSX.Element {
       >
         <Route index element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 

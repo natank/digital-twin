@@ -1,13 +1,15 @@
 import { useState, type JSX } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 
+import { UnreadBadge } from '../components/notifications/UnreadBadge';
 import { useAuth } from '../lib/auth/AuthContext';
 import styles from './DashboardLayout.module.css';
 
 const NAV = [
-  { to: '/dashboard', end: true, label: 'Overview' },
-  { to: '/dashboard/profile', end: false, label: 'Profile' },
-  { to: '/dashboard/settings', end: false, label: 'Settings' },
+  { to: '/dashboard', end: true, label: 'Overview', badge: false },
+  { to: '/dashboard/profile', end: false, label: 'Profile', badge: false },
+  { to: '/dashboard/notifications', end: false, label: 'Notifications', badge: true },
+  { to: '/dashboard/settings', end: false, label: 'Settings', badge: false },
 ] as const;
 
 export function DashboardLayout(): JSX.Element {
@@ -34,6 +36,7 @@ export function DashboardLayout(): JSX.Element {
               }
             >
               {item.label}
+              {item.badge ? <UnreadBadge /> : null}
             </NavLink>
           ))}
         </nav>
