@@ -4,12 +4,39 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 0.25rem 0;
+  padding: 0.35rem 0.15rem;
   min-height: 12rem;
+  /* Keyboard focus ring when tabbing into the log */
+  border-radius: 6px;
+}
+
+.messages:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.item {
+  margin: 0;
+  padding: 0;
 }
 
 .hint {
   margin: 0;
   font-size: 0.85rem;
   color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .messages {
+    min-height: 10rem;
+  }
 }

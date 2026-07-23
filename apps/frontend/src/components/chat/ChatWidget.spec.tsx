@@ -73,7 +73,7 @@ describe('ChatWidget', () => {
     render(<ChatWidget ownerId="owner-1" />);
     await waitFor(() => expect(screen.getByText(/Chat with Ada|Ada · Engineer/i)).toBeTruthy());
 
-    await user.type(screen.getByLabelText(/message/i), 'Hello');
+    await user.type(screen.getByRole('textbox', { name: /message/i }), 'Hello');
     await user.click(screen.getByRole('button', { name: /send/i }));
     expect(await screen.findByText('Hello')).toBeTruthy();
     expect(await screen.findByText('Hi there!')).toBeTruthy();

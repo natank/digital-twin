@@ -35,12 +35,24 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
   const [lastFailedContent, setLastFailedContent] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const startedOnce = useRef(false);
+  const composerFocusRef = useRef(false);
 
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
     };
   }, []);
+
+  // Move focus into the composer once a session is ready (one-shot).
+  useEffect(() => {
+    if (sessionId && !composerFocusRef.current) {
+      composerFocusRef.current = true;
+      const el = document.getElementById('chat-composer-input');
+      if (el && typeof el.focus === 'function') {
+        el.focus();
+      }
+    }
+  }, [sessionId]);
 
   const startSession = useCallback(async (): Promise<void> => {
     if (!resolvedOwner) {
@@ -179,15 +191,25 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
     );
   }
 
+  const statusText = starting ? 'Connecting…' : sessionId ? 'Session active' : 'Not connected';
+
   return (
-    <div className={styles.widget}>
-      <div className={styles.header}>
-        <h2>{title}</h2>
-        <span className={styles.meta}>
-          {starting ? 'Connecting…' : sessionId ? 'Session active' : 'Not connected'}
+    <section
+      className={styles.widget}
+      aria-labelledby="chat-widget-title"
+      aria-describedby="chat-widget-status"
+    >
+      <header className={styles.header}>
+        <h2 id="chat-widget-title">{title}</h2>
+        <span id="chat-widget-status" className={styles.meta} aria-live="polite">
+          {statusText}
         </span>
-      </div>
-      {notice && <p className={styles.notice}>{notice}</p>}
+      </header>
+      {notice && (
+        <p className={styles.notice} role="status">
+          {notice}
+        </p>
+      )}
       {error && (
         <ChatErrorBanner
           message={error}
@@ -218,6 +240,6 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
           starting ? 'Connecting…' : sessionId ? 'Type a message…' : 'Reconnect to start chatting…'
         }
       />
-    </div>
+    </section>
   );
 }

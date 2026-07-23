@@ -34,7 +34,7 @@
 }
 
 .visitor {
-  background: #2563eb;
+  background: #1d4ed8; /* stronger contrast on white page */
   color: #ffffff;
   border-bottom-right-radius: 4px;
 }
@@ -43,6 +43,13 @@
   background: #f1f5f9;
   color: #0f172a;
   border-bottom-left-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .bubble {
+    max-width: 92%;
+    font-size: 0.95rem;
+  }
 }
 
 .streaming .bubble {
