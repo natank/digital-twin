@@ -25,6 +25,10 @@ export function DashboardPage(): JSX.Element {
           <h2>Settings</h2>
           <p>Account details and password options.</p>
         </Link>
+        <Link className={styles.card} to="/dashboard/conversations">
+          <h2>Conversations</h2>
+          <p>Browse visitor chat transcripts.</p>
+        </Link>
         <Link className={styles.card} to="/dashboard/notifications">
           <h2>Notifications</h2>
           <p>In-app alerts and mark-as-read.</p>

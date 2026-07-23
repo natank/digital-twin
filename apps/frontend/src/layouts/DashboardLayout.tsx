@@ -8,6 +8,7 @@ import styles from './DashboardLayout.module.css';
 const NAV = [
   { to: '/dashboard', end: true, label: 'Overview', badge: false },
   { to: '/dashboard/profile', end: false, label: 'Profile', badge: false },
+  { to: '/dashboard/conversations', end: false, label: 'Conversations', badge: false },
   { to: '/dashboard/notifications', end: false, label: 'Notifications', badge: true },
   { to: '/dashboard/settings', end: false, label: 'Settings', badge: false },
 ] as const;
