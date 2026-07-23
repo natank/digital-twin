@@ -43,9 +43,7 @@ export function updateTwinConfig(
   });
 }
 
-export function listPromptVersions(
-  token: string,
-): Promise<{ versions: PromptVersionWire[] }> {
+export function listPromptVersions(token: string): Promise<{ versions: PromptVersionWire[] }> {
   return apiFetch<{ versions: PromptVersionWire[] }>('/config/me/system-prompt/versions', {
     token,
   });
@@ -66,7 +64,7 @@ export function restorePromptVersion(
   token: string,
   versionNumber: number,
 ): Promise<{ system_prompt: string; version_number?: number | null }> {
-  return apiFetch(`/config/me/system-prompt/versions/${versionNumber}/restore`, {
+  return apiFetch(`/config/me/system-prompt/restore/${versionNumber}`, {
     method: 'POST',
     token,
   });
