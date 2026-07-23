@@ -1,8 +1,12 @@
 export { ChatComposer } from './ChatComposer';
 export type { ChatComposerProps } from './ChatComposer';
+export { ChatErrorBanner } from './ChatErrorBanner';
+export type { ChatErrorBannerProps } from './ChatErrorBanner';
 export { ChatWidget } from './ChatWidget';
 export type { ChatWidgetProps } from './ChatWidget';
 export { MessageBubble } from './MessageBubble';
 export type { MessageBubbleProps } from './MessageBubble';
 export { MessageList } from './MessageList';
 export type { MessageListProps } from './MessageList';
+export { TypingIndicator } from './TypingIndicator';
+export type { TypingIndicatorProps } from './TypingIndicator';

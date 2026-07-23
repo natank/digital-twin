@@ -78,4 +78,27 @@ describe('ChatWidget', () => {
     expect(await screen.findByText('Hello')).toBeTruthy();
     expect(await screen.findByText('Hi there!')).toBeTruthy();
   });
+
+  it('shows retry when session start fails', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Server Error',
+        json: async () => ({
+          status: 'error',
+          data: null,
+          error: { code: 'ERR', message: 'Backend down', details: {} },
+          meta: { timestamp: 't', request_id: null },
+        }),
+      }),
+    );
+    render(<ChatWidget ownerId="owner-1" />);
+    expect(await screen.findByText(/backend down/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /retry connection/i })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /dismiss/i }));
+    expect(screen.queryByText(/backend down/i)).toBeNull();
+  });
 });
