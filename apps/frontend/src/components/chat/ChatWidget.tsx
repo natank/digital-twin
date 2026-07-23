@@ -1,5 +1,4 @@
-import { FormEvent, useCallback, useEffect, useRef, useState, type JSX } from 'react';
-import { Button } from 'frontend-shared';
+import { useCallback, useEffect, useState, type JSX } from 'react';
 
 import {
   createChatSession,
@@ -8,7 +7,10 @@ import {
   type MessageWire,
 } from '../../lib/api/chat';
 import { ApiClientError } from '../../lib/api/client';
+import { ChatComposer } from './ChatComposer';
 import styles from './ChatWidget.module.css';
+import { MessageBubble } from './MessageBubble';
+import { MessageList } from './MessageList';
 
 export interface ChatWidgetProps {
   /** Override demo owner (defaults to VITE_DEMO_OWNER_ID or ?owner=). */
@@ -25,14 +27,6 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
   const [notice, setNotice] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [sending, setSending] = useState(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = bottomRef.current;
-    if (el && typeof el.scrollIntoView === 'function') {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, sending]);
 
   const startSession = useCallback(async (): Promise<void> => {
     if (!resolvedOwner) {
@@ -65,8 +59,7 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount/owner start
   }, [resolvedOwner]);
 
-  async function onSend(e: FormEvent): Promise<void> {
-    e.preventDefault();
+  async function handleSend(): Promise<void> {
     const content = draft.trim();
     if (!content || !sessionId || sending) {
       return;
@@ -112,34 +105,30 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
           {error}
         </p>
       )}
-      <div className={styles.messages} aria-live="polite">
-        {messages.length === 0 && !sending && (
-          <p className={styles.meta}>Ask about experience, skills, or career background.</p>
-        )}
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`${styles.bubble} ${m.sender === 'visitor' ? styles.visitor : styles.ai}`}
-          >
-            {m.content}
-          </div>
-        ))}
-        {sending && <div className={`${styles.bubble} ${styles.ai}`}>Thinking…</div>}
-        <div ref={bottomRef} />
-      </div>
-      <form className={styles.composer} onSubmit={(e) => void onSend(e)}>
-        <textarea
-          aria-label="Message"
-          placeholder={sessionId ? 'Type a message…' : 'Starting session…'}
-          value={draft}
-          disabled={!sessionId || sending}
-          onChange={(ev) => setDraft(ev.target.value)}
-          rows={2}
-        />
-        <Button type="submit" isLoading={sending} disabled={!sessionId || !draft.trim()}>
-          Send
-        </Button>
-      </form>
+      <MessageList
+        messages={messages}
+        scrollKey={sending}
+        footer={
+          sending ? (
+            <MessageBubble
+              isStreaming
+              message={{
+                id: 'typing',
+                sender: 'ai',
+                content: 'Thinking…',
+              }}
+            />
+          ) : null
+        }
+      />
+      <ChatComposer
+        value={draft}
+        onChange={setDraft}
+        onSubmit={() => void handleSend()}
+        disabled={!sessionId}
+        isLoading={sending}
+        placeholder={sessionId ? 'Type a message…' : 'Starting session…'}
+      />
     </div>
   );
 }
