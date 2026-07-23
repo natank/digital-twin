@@ -73,7 +73,7 @@ Buffer (end of Week 14 / Phase 4 planning):
 | **016** | Pushover setup UI                              | FE-notif | 14   | 250–400    | P0       | ✅ Merged ([52](https://github.com/natank/digital-twin/pull/52))  |
 | **017** | Conversation browser (+ thin owner API)        | FE-conv  | 14   | 400–650    | P0       | ✅ Merged ([53](https://github.com/natank/digital-twin/pull/53))  |
 | **018** | Digital twin config UI                         | FE-cfg   | 14   | 350–550    | P0       | ✅ Merged ([54](https://github.com/natank/digital-twin/pull/54))  |
-| **019** | Phase 3 polish, smoke, docs                    | —        | 14   | 300–500    | P1       | Not started                                                       |
+| **019** | Phase 3 polish, smoke, docs                    | —        | 14   | 300–500    | P1       | ✅ Merged ([55](https://github.com/natank/digital-twin/pull/55))  |
 
 **Total scope (estimate):** ~6,300–9,700 lines across 19 PRs (TSX/CSS/tests; lockfile churn excluded).
 
