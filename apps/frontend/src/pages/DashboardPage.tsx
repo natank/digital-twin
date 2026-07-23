@@ -25,14 +25,14 @@ export function DashboardPage(): JSX.Element {
           <h2>Settings</h2>
           <p>Account details and password options.</p>
         </Link>
+        <Link className={styles.card} to="/dashboard/notifications">
+          <h2>Notifications</h2>
+          <p>In-app alerts and mark-as-read.</p>
+        </Link>
         <Link className={styles.card} to="/chat">
           <h2>Public chat</h2>
           <p>Preview the visitor chat experience.</p>
         </Link>
-        <div className={styles.card}>
-          <h2>Notifications</h2>
-          <p>In-app center and Pushover (Week 14).</p>
-        </div>
       </div>
     </section>
   );
