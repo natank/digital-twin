@@ -7,6 +7,7 @@
     "graph": "nx graph",
     "dev": "./scripts/start-dev.sh",
     "dev:seed": "./scripts/start-dev.sh --seed",
+    "worker": "pnpm nx run apps/backend:worker",
     "db:migrate": "./scripts/db-migrate.sh",
     "db:seed": "./scripts/db-seed.sh",
     "db:reset": "./scripts/db-reset.sh",

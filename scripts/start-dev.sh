@@ -100,8 +100,12 @@ cat <<EOF
 
  Next steps — start application servers in separate terminals:
 
-   pnpm nx serve apps/backend     # API  http://localhost:8000
-   pnpm nx serve apps/frontend    # UI   http://localhost:4200
+   pnpm nx serve apps/backend     # API    http://localhost:8000
+   pnpm nx run apps/backend:worker  # Celery worker (REQUIRED for CV processing)
+   pnpm nx serve apps/frontend    # UI     http://localhost:4200
+
+ NOTE: The Celery worker consumes the CV-processing queue. Without it,
+ uploaded CVs stay stuck in "pending" forever. Shortcut: pnpm worker
 
  Useful commands:
 
