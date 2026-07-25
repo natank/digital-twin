@@ -43,6 +43,40 @@
   padding: 0.5rem 0.75rem;
 }
 
+.ownerMeta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.ownerMeta code {
+  word-break: break-all;
+}
+
+.sampleBanner {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #7c2d12;
+  background: #ffedd5;
+  border: 1px solid #fb923c;
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+}
+
+.sampleBanner code {
+  word-break: break-all;
+}
+
+.ownerSwitcher {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.ownerSwitcherField {
+  flex: 1;
+}
+
 .setup {
   padding: 1rem;
   background: #fff7ed;

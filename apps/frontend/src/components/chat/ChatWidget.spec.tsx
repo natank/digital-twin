@@ -14,14 +14,77 @@ function sseStream(events: string): ReadableStream<Uint8Array> {
   });
 }
 
+function sessionFetchMock() {
+  return vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    if (url.includes('/chat/sessions') && init?.method === 'POST' && !url.includes('/sse')) {
+      const body = JSON.parse(String(init.body));
+      return {
+        ok: true,
+        status: 201,
+        statusText: 'Created',
+        json: async () => ({
+          status: 'success',
+          data: {
+            session_id: `sess-${body.owner_id}`,
+            owner_id: body.owner_id,
+            expires_at: '2099-01-01T00:00:00Z',
+            owner_first_name: 'Ada',
+            owner_headline: 'Engineer',
+          },
+          error: null,
+          meta: { timestamp: 't', request_id: null },
+        }),
+      };
+    }
+    throw new Error(`Unexpected fetch ${url}`);
+  });
+}
+
 describe('ChatWidget', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('shows setup hint when no owner id', () => {
+  it('shows setup hint when no owner id and no demo fallback configured', () => {
     render(<ChatWidget ownerId="" />);
     expect(screen.getByText(/VITE_DEMO_OWNER_ID/i)).toBeTruthy();
+  });
+
+  it('shows a sample-mode banner when falling back to the demo owner', async () => {
+    vi.stubGlobal('fetch', sessionFetchMock());
+    vi.stubEnv('VITE_DEMO_OWNER_ID', 'demo-owner');
+
+    render(<ChatWidget />);
+
+    expect(await screen.findByText(/sample twin/i)).toBeTruthy();
+    expect(screen.getByText(/previewing as/i).textContent).toContain('demo-owner');
+  });
+
+  it('does not show the sample-mode banner when an owner id is explicit', async () => {
+    vi.stubGlobal('fetch', sessionFetchMock());
+
+    render(<ChatWidget ownerId="owner-1" />);
+
+    await waitFor(() => expect(screen.getByText(/previewing as/i)).toBeTruthy());
+    expect(screen.queryByText(/sample twin/i)).toBeNull();
+  });
+
+  it('lets a visitor switch owner from the widget and clears the sample banner', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', sessionFetchMock());
+    vi.stubEnv('VITE_DEMO_OWNER_ID', 'demo-owner');
+
+    render(<ChatWidget />);
+    expect(await screen.findByText(/sample twin/i)).toBeTruthy();
+
+    await user.type(screen.getByRole('textbox', { name: /switch owner/i }), 'owner-42');
+    await user.click(screen.getByRole('button', { name: /^switch$/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText(/previewing as/i).textContent).toContain('owner-42'),
+    );
+    expect(screen.queryByText(/sample twin/i)).toBeNull();
   });
 
   it('creates a session and streams a reply', async () => {

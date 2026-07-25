@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
+import { Button, Input } from 'frontend-shared';
 
 import { createChatSession, getDemoOwnerId, type MessageWire } from '../../lib/api/chat';
 import { ChatStreamError, streamChatReply } from '../../lib/api/chatStream';
@@ -16,12 +17,24 @@ export interface ChatWidgetProps {
 
 type ErrorKind = 'session' | 'send' | null;
 
+/**
+ * 'explicit'      — caller passed an owner id (dashboard link, ?owner= in the URL).
+ * 'demo-fallback' — no owner id was supplied; VITE_DEMO_OWNER_ID kicked in silently.
+ */
+type OwnerSource = 'explicit' | 'demo-fallback';
+
 function localId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
-  const resolvedOwner = (ownerId || getDemoOwnerId()).trim();
+  const propOwner = (ownerId || '').trim();
+  const [activeOwner, setActiveOwner] = useState(propOwner);
+  const [ownerSource, setOwnerSource] = useState<OwnerSource>(
+    propOwner ? 'explicit' : 'demo-fallback',
+  );
+  const [ownerOverride, setOwnerOverride] = useState('');
+  const resolvedOwner = (activeOwner || getDemoOwnerId()).trim();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [title, setTitle] = useState('Digital Twin');
   const [messages, setMessages] = useState<MessageWire[]>([]);
@@ -180,6 +193,28 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
     }
   }
 
+  function handleSwitchOwner(): void {
+    const next = ownerOverride.trim();
+    if (!next || next === resolvedOwner) {
+      return;
+    }
+    // Reset session/conversation state so the widget starts fresh against the new owner.
+    abortRef.current?.abort();
+    startedOnce.current = false;
+    composerFocusRef.current = false;
+    setSessionId(null);
+    setMessages([]);
+    setDraft('');
+    setError(null);
+    setErrorKind(null);
+    setNotice(null);
+    setStreamingText('');
+    setLastFailedContent(null);
+    setOwnerOverride('');
+    setOwnerSource('explicit');
+    setActiveOwner(next);
+  }
+
   if (!resolvedOwner) {
     return (
       <div className={styles.setup} role="status">
@@ -205,6 +240,41 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
           {statusText}
         </span>
       </header>
+      <p className={styles.ownerMeta}>
+        Previewing as <code>{resolvedOwner}</code>
+      </p>
+      {ownerSource === 'demo-fallback' && (
+        <p className={styles.sampleBanner} role="status">
+          <strong>Sample twin.</strong> No owner was specified, so this is the seeded demo
+          profile — not a real owner&apos;s twin. Open this page with{' '}
+          <code>?owner=&lt;uuid&gt;</code>, or switch owner below.
+        </p>
+      )}
+      <div className={styles.ownerSwitcher}>
+        <div className={styles.ownerSwitcherField}>
+          <Input
+            label="Switch owner"
+            placeholder="Paste an owner UUID"
+            value={ownerOverride}
+            onChange={(e) => setOwnerOverride(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSwitchOwner();
+              }
+            }}
+          />
+        </div>
+        <Button
+          type="button"
+          size="small"
+          variant="secondary"
+          onClick={handleSwitchOwner}
+          disabled={!ownerOverride.trim() || ownerOverride.trim() === resolvedOwner}
+        >
+          Switch
+        </Button>
+      </div>
       {notice && (
         <p className={styles.notice} role="status">
           {notice}
