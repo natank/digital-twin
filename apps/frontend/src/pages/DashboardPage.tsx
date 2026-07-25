@@ -37,7 +37,7 @@ export function DashboardPage(): JSX.Element {
           <h2>Notifications</h2>
           <p>In-app alerts and mark-as-read.</p>
         </Link>
-        <Link className={styles.card} to={owner ? `/chat?owner=${owner.id}` : '/chat'}>
+        <Link className={styles.card} to={owner ? `/chat?owner=${owner.id}&preview=1` : '/chat'}>
           <h2>Public chat</h2>
           <p>Preview the visitor chat experience.</p>
         </Link>

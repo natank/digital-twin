@@ -7,6 +7,7 @@ import styles from './Page.module.css';
 export function ChatPage(): JSX.Element {
   const [params] = useSearchParams();
   const ownerFromQuery = params.get('owner') ?? undefined;
+  const isPreview = params.get('preview') === '1';
 
   return (
     <section className={`${styles.page} ${styles.chatPage}`} aria-labelledby="chat-page-heading">
@@ -18,7 +19,7 @@ export function ChatPage(): JSX.Element {
       <a className={styles.skipToChat} href="#chat-composer-input">
         Skip to message input
       </a>
-      <ChatWidget ownerId={ownerFromQuery} />
+      <ChatWidget ownerId={ownerFromQuery} preview={isPreview} />
     </section>
   );
 }

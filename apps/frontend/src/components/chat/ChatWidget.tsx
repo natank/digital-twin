@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
+import { Button, Input } from 'frontend-shared';
 
 import { createChatSession, getDemoOwnerId, type MessageWire } from '../../lib/api/chat';
 import { ChatStreamError, streamChatReply } from '../../lib/api/chatStream';
@@ -12,16 +13,37 @@ import { TypingIndicator } from './TypingIndicator';
 export interface ChatWidgetProps {
   /** Override demo owner (defaults to VITE_DEMO_OWNER_ID or ?owner=). */
   ownerId?: string;
+  /**
+   * Owner-facing preview mode (e.g. dashboard "Public chat" link). Shows the
+   * raw resolved owner id ("Previewing as {uuid}") — meaningful for an owner
+   * confirming their own twin, but confusing debug text for a real visitor,
+   * so it's hidden unless explicitly requested.
+   */
+  preview?: boolean;
 }
 
 type ErrorKind = 'session' | 'send' | null;
+
+/**
+ * 'explicit'      — caller passed an owner id (dashboard link, ?owner= in the URL).
+ * 'demo-fallback' — no owner id was supplied; VITE_DEMO_OWNER_ID kicked in silently.
+ */
+type OwnerSource = 'explicit' | 'demo-fallback';
 
 function localId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
-  const resolvedOwner = (ownerId || getDemoOwnerId()).trim();
+export function ChatWidget({ ownerId, preview = false }: ChatWidgetProps): JSX.Element {
+  const propOwner = (ownerId || '').trim();
+  const [activeOwner, setActiveOwner] = useState(propOwner);
+  const [ownerSource, setOwnerSource] = useState<OwnerSource>(
+    propOwner ? 'explicit' : 'demo-fallback',
+  );
+  const [ownerOverride, setOwnerOverride] = useState('');
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const ownerInputRef = useRef<HTMLInputElement | null>(null);
+  const resolvedOwner = (activeOwner || getDemoOwnerId()).trim();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [title, setTitle] = useState('Digital Twin');
   const [messages, setMessages] = useState<MessageWire[]>([]);
@@ -53,6 +75,13 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
       }
     }
   }, [sessionId]);
+
+  // Move focus into the owner field when the switcher expands.
+  useEffect(() => {
+    if (switcherOpen) {
+      ownerInputRef.current?.focus();
+    }
+  }, [switcherOpen]);
 
   const startSession = useCallback(async (): Promise<void> => {
     if (!resolvedOwner) {
@@ -180,6 +209,29 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
     }
   }
 
+  function handleSwitchOwner(): void {
+    const next = ownerOverride.trim();
+    if (!next || next === resolvedOwner) {
+      return;
+    }
+    // Reset session/conversation state so the widget starts fresh against the new owner.
+    abortRef.current?.abort();
+    startedOnce.current = false;
+    composerFocusRef.current = false;
+    setSessionId(null);
+    setMessages([]);
+    setDraft('');
+    setError(null);
+    setErrorKind(null);
+    setNotice(null);
+    setStreamingText('');
+    setLastFailedContent(null);
+    setOwnerOverride('');
+    setOwnerSource('explicit');
+    setActiveOwner(next);
+    setSwitcherOpen(false);
+  }
+
   if (!resolvedOwner) {
     return (
       <div className={styles.setup} role="status">
@@ -201,10 +253,62 @@ export function ChatWidget({ ownerId }: ChatWidgetProps): JSX.Element {
     >
       <header className={styles.header}>
         <h2 id="chat-widget-title">{title}</h2>
-        <span id="chat-widget-status" className={styles.meta} aria-live="polite">
-          {statusText}
+        <span className={styles.headerMeta}>
+          <span id="chat-widget-status" className={styles.meta} aria-live="polite">
+            {statusText}
+          </span>
+          <button
+            type="button"
+            className={styles.switcherToggle}
+            aria-expanded={switcherOpen}
+            aria-controls="chat-owner-switcher"
+            onClick={() => setSwitcherOpen((open) => !open)}
+          >
+            {switcherOpen ? 'Cancel' : 'Switch owner'}
+          </button>
         </span>
       </header>
+      {ownerSource === 'demo-fallback' && (
+        <p className={styles.sampleBanner} role="status">
+          <strong>Sample twin.</strong> This is a demo profile, not a real owner&apos;s twin.
+        </p>
+      )}
+      {preview && (
+        <p className={styles.ownerMeta}>
+          Previewing as <code>{resolvedOwner}</code>
+        </p>
+      )}
+      {switcherOpen && (
+        <div id="chat-owner-switcher" className={styles.ownerSwitcher}>
+          <div className={styles.ownerSwitcherField}>
+            <Input
+              label="Switch owner"
+              placeholder="Paste an owner UUID"
+              value={ownerOverride}
+              onChange={(e) => setOwnerOverride(e.target.value)}
+              ref={ownerInputRef}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSwitchOwner();
+                } else if (e.key === 'Escape') {
+                  setSwitcherOpen(false);
+                  setOwnerOverride('');
+                }
+              }}
+            />
+          </div>
+          <Button
+            type="button"
+            size="small"
+            variant="secondary"
+            onClick={handleSwitchOwner}
+            disabled={!ownerOverride.trim() || ownerOverride.trim() === resolvedOwner}
+          >
+            Switch
+          </Button>
+        </div>
+      )}
       {notice && (
         <p className={styles.notice} role="status">
           {notice}

@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes, type JSX } from 'react';
+import { forwardRef, useId, type InputHTMLAttributes } from 'react';
 
 import styles from './Input.module.css';
 
@@ -10,14 +10,10 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   helperText?: string;
 }
 
-export function Input({
-  label,
-  error,
-  helperText,
-  className,
-  required,
-  ...rest
-}: InputProps): JSX.Element {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { label, error, helperText, className, required, ...rest },
+  ref,
+) {
   // Generated so multiple Inputs on one page never collide, and so the
   // label/description associations stay correct without caller effort.
   const inputId = useId();
@@ -37,6 +33,7 @@ export function Input({
       </label>
       <input
         id={inputId}
+        ref={ref}
         className={[styles['input'], error && styles['inputError'], className]
           .filter(Boolean)
           .join(' ')}
@@ -57,6 +54,6 @@ export function Input({
       )}
     </div>
   );
-}
+});
 
 export default Input;
