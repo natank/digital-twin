@@ -24,15 +24,15 @@ Digital Twin enables professionals to create an always-available AI assistant th
 
 ## Prerequisites
 
-| Tool                 | Version  | Notes                                                                   |
-| -------------------- | -------- | ----------------------------------------------------------------------- |
-| Node.js              | 20+      | via nvm or system install                                               |
-| pnpm                 | 9+       | `corepack enable && corepack prepare pnpm@latest --activate`            |
-| Python               | 3.11+    | Poetry pins per-project via `.python-version`                           |
-| Poetry               | 2.x      | `pipx install poetry`                                                   |
-| poetry-plugin-export | latest   | `pipx inject poetry poetry-plugin-export` (required by Nx Python build) |
-| Docker or Podman     | recent   | Compose-compatible CLI (`docker compose` or shims)                      |
-| `gh` CLI             | optional | GitHub PRs from the command line                                        |
+| Tool                 | Version  | Notes                                                                                          |
+| -------------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| Node.js              | 20+      | via nvm or system install                                                                      |
+| pnpm                 | 9+       | `corepack enable && corepack prepare pnpm@latest --activate`                                   |
+| Python               | 3.11+    | Poetry pins per-project via `.python-version`                                                  |
+| Poetry               | 2.x      | `pipx install poetry`                                                                          |
+| poetry-plugin-export | latest   | `pipx inject poetry poetry-plugin-export` (required by Nx Python build)                        |
+| Docker or Podman     | recent   | Needs a Compose CLI (see [Local infrastructure](#local-infrastructure-docker--podman-compose)) |
+| `gh` CLI             | optional | GitHub PRs from the command line                                                               |
 
 ## Quick Start
 
@@ -46,24 +46,107 @@ pnpm install
 pnpm nx run apps/backend:install
 pnpm nx run libs/backend-shared:install
 
-# One-command infrastructure start (creates .env.local, starts Postgres/Redis/LocalStack, migrates)
+# Environment (git-ignored; template is .env.example)
+cp .env.example .env.local
+# Optional: set VITE_DEMO_OWNER_ID after seed (see seed output / DB)
+python3 scripts/validate-env.py
+
+# Infrastructure: Postgres, Redis, LocalStack (S3) via Compose
+# Prefer the helper (validates env, compose up, wait healthy, migrate, optional seed):
 ./scripts/start-dev.sh --seed
+
+# Or run Compose yourself (manual path) — see section below.
 
 # In separate terminals — application servers (hot reload)
 pnpm nx serve apps/backend     # http://localhost:8000  (docs: /docs)
 pnpm nx serve apps/frontend    # http://localhost:4200
-```
-
-### Environment setup
-
-```bash
-cp .env.example .env.local
-# Edit .env.local if you need non-default credentials
-python3 scripts/validate-env.py
-python3 scripts/validate-env.py --check-services   # after stack is up
+# Optional: Celery worker for CV processing
+pnpm nx run apps/backend:worker
 ```
 
 `.env.local` is git-ignored. `.env.example` is the committed template.
+
+Validate services after the stack is up:
+
+```bash
+python3 scripts/validate-env.py --check-services
+```
+
+## Local infrastructure (Docker / Podman Compose)
+
+The repo root **`docker-compose.yml`** defines local **infra** (not the API/UI):
+
+| Service      | Port | Role                       |
+| ------------ | ---- | -------------------------- |
+| `postgres`   | 5432 | App database               |
+| `redis`      | 6379 | Cache, rate limits, Celery |
+| `localstack` | 4566 | Local AWS S3 (CV uploads)  |
+
+### Compose CLI options
+
+Any of these work if installed and able to talk to the container engine:
+
+```bash
+# Docker Desktop / Engine (Compose V2 plugin)
+docker compose -f docker-compose.yml up -d
+docker compose -f docker-compose.yml ps
+docker compose -f docker-compose.yml down
+
+# Standalone docker-compose binary
+docker-compose -f docker-compose.yml up -d
+
+# Podman (common on macOS without Docker Desktop)
+podman machine start                    # required once per reboot if machine is stopped
+podman-compose -f docker-compose.yml up -d
+podman-compose -f docker-compose.yml ps
+# Some installs also support:  podman compose -f docker-compose.yml up -d
+```
+
+`./scripts/start-dev.sh` auto-detects, in order: `docker compose` → `docker-compose` → `podman-compose`.
+
+### Podman notes (macOS)
+
+1. **Start the Podman VM** if you see “connection refused” / cannot connect to the Podman socket:
+
+   ```bash
+   podman machine list
+   podman machine start
+   ```
+
+2. If `docker` is a symlink to `podman` and the API socket is not on the default path:
+
+   ```bash
+   export DOCKER_HOST="unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')"
+   ```
+
+3. Install Compose for Podman if missing: `brew install podman-compose` (or enable the Compose provider for your Podman install).
+
+### Manual Compose workflow (without start-dev.sh)
+
+```bash
+cp .env.example .env.local          # once
+# Start containers
+docker compose up -d                # or: podman-compose up -d
+# Schema + sample owner
+./scripts/db-migrate.sh
+./scripts/db-seed.sh
+# Apps
+pnpm nx serve apps/backend
+pnpm nx serve apps/frontend
+```
+
+Seed login (after `--seed` / `db-seed.sh`): `owner@example.com` / `Owner123!`  
+For public `/chat`, set `VITE_DEMO_OWNER_ID` in `.env.local` to that owner’s UUID (from `/auth/me` after login or the DB).
+
+### What start-dev.sh does
+
+1. Ensures `.env.local` exists (from `.env.example` if needed)
+2. Validates env vars
+3. Runs **Compose `up -d`** for Postgres, Redis, LocalStack
+4. Waits until Postgres/Redis are reachable
+5. Runs Alembic migrations (and seed with `--seed`)
+
+It does **not** start the FastAPI or Vite processes — run those with `pnpm nx serve` as above.
 
 ## Development scripts
 
@@ -120,6 +203,7 @@ digital-twin/
 ## Documentation
 
 - [Development Guide](./docs/DEVELOPMENT.md) — Setup, tooling, testing, debugging
+- [Test Readiness Report](./docs/TEST_READINESS_REPORT.md) — Phase 0–3 validation and production-test readiness
 - [Contributing](./docs/CONTRIBUTING.md) — PR process, commits, reviews
 - [Operational Concept](./docs/OPERATIONAL_CONCEPT.md) — System overview and actors
 - [Product Requirements](./docs/PRD.md) — Features and epics
@@ -127,6 +211,8 @@ digital-twin/
 - [Implementation Plan](./docs/IMPLEMENTATION_MASTER_PLAN.md) — Development roadmap
 - [Phase 0 PR Breakdown](./docs/phase-0/PR_BREAKDOWN.md) — Foundation (complete)
 - [Phase 1 PR Breakdown](./docs/phase-1/PR_BREAKDOWN.md) — Core services (Auth → Profile → Chat)
+- [Phase 2 PR Breakdown](./docs/phase-2/PR_BREAKDOWN.md) — Notifications + config
+- [Phase 3 PR Breakdown](./docs/phase-3/PR_BREAKDOWN.md) — Frontend SPA
 
 ## IDE setup
 
