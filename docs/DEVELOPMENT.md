@@ -15,16 +15,27 @@ How to set up, run, test, and contribute code on the Digital Twin monorepo.
 | pre-commit           | optional | `pipx install pre-commit`                                                   |
 | `gh` CLI             | optional | GitHub PRs from the terminal                                                |
 
-### Podman note
+### Docker / Podman Compose
 
-Some developer machines use Podman instead of Docker Desktop. With the
-`docker` / `docker compose` CLI shims installed, `docker-compose.yml` and
-`./scripts/start-dev.sh` work unchanged. Prefer:
+Root **`docker-compose.yml`** runs local infra only (Postgres, Redis, LocalStack).
+See **README.md → Local infrastructure** for full commands.
 
 ```bash
-docker compose ps
-# equivalent: podman-compose ps
+# Docker
+docker compose -f docker-compose.yml up -d
+docker compose -f docker-compose.yml ps
+
+# Podman (macOS: start the machine first if the socket is down)
+podman machine start
+podman-compose -f docker-compose.yml up -d
+# or: podman compose -f docker-compose.yml up -d
+
+# Helper (preferred): detect compose CLI, wait healthy, migrate
+./scripts/start-dev.sh --seed
 ```
+
+`scripts/_common.sh` picks the first available of: `docker compose`,
+`docker-compose`, `podman-compose`.
 
 ## First-time setup
 
@@ -466,9 +477,12 @@ pnpm nx run libs/backend-shared:install
 ## Related docs
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — PR process and review expectations
+- [TEST_READINESS_REPORT.md](./TEST_READINESS_REPORT.md) — Phase 0–3 validation and production-test readiness
 - [OPERATIONAL_CONCEPT.md](./OPERATIONAL_CONCEPT.md)
 - [PRD.md](./PRD.md)
 - [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md)
 - [IMPLEMENTATION_MASTER_PLAN.md](./IMPLEMENTATION_MASTER_PLAN.md)
 - [phase-0/PR_BREAKDOWN.md](./phase-0/PR_BREAKDOWN.md)
 - [phase-1/PR_BREAKDOWN.md](./phase-1/PR_BREAKDOWN.md)
+- [phase-2/PR_BREAKDOWN.md](./phase-2/PR_BREAKDOWN.md)
+- [phase-3/PR_BREAKDOWN.md](./phase-3/PR_BREAKDOWN.md)

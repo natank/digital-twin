@@ -10,6 +10,8 @@ An AI-powered "digital twin" web product that represents a professional on their
 | [PRD.md](./PRD.md) | Product requirements: epics, user stories, acceptance criteria, roadmap |
 | [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) | Architecture, tech stack, database design, API specs, security |
 | [IMPLEMENTATION_MASTER_PLAN.md](./IMPLEMENTATION_MASTER_PLAN.md) | 16-week phased implementation plan and PR workflow |
+| [DEVELOPMENT.md](./DEVELOPMENT.md) | Local setup, test commands, smoke scripts, tooling |
+| [TEST_READINESS_REPORT.md](./TEST_READINESS_REPORT.md) | Phase 0–3 validation results and production-test readiness |
 | [phase-0/](./phase-0/README.md) | Phase 0 (foundation) PR breakdown and quick reference |
 
 ## Project Structure
