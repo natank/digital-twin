@@ -51,14 +51,14 @@ describe('ChatWidget', () => {
     expect(screen.getByText(/VITE_DEMO_OWNER_ID/i)).toBeTruthy();
   });
 
-  it('shows a sample-mode banner when falling back to the demo owner', async () => {
+  it('shows a sample-mode banner (no raw owner id) when falling back to the demo owner', async () => {
     vi.stubGlobal('fetch', sessionFetchMock());
     vi.stubEnv('VITE_DEMO_OWNER_ID', 'demo-owner');
 
     render(<ChatWidget />);
 
     expect(await screen.findByText(/sample twin/i)).toBeTruthy();
-    expect(screen.getByText(/previewing as/i).textContent).toContain('demo-owner');
+    expect(screen.queryByText(/previewing as/i)).toBeNull();
   });
 
   it('does not show the sample-mode banner when an owner id is explicit', async () => {
@@ -66,18 +66,45 @@ describe('ChatWidget', () => {
 
     render(<ChatWidget ownerId="owner-1" />);
 
-    await waitFor(() => expect(screen.getByText(/previewing as/i)).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/Chat with Ada|Ada · Engineer/i)).toBeTruthy());
     expect(screen.queryByText(/sample twin/i)).toBeNull();
   });
 
-  it('lets a visitor switch owner from the widget and clears the sample banner', async () => {
+  it('hides the raw owner id from regular visitors, and keeps the switcher collapsed by default', async () => {
+    vi.stubGlobal('fetch', sessionFetchMock());
+
+    render(<ChatWidget ownerId="owner-1" />);
+
+    await waitFor(() => expect(screen.getByText(/Chat with Ada|Ada · Engineer/i)).toBeTruthy());
+    expect(screen.queryByText(/previewing as/i)).toBeNull();
+    expect(screen.getByRole('button', { name: /switch owner/i })).toBeTruthy();
+    expect(screen.queryByRole('textbox', { name: /switch owner/i })).toBeNull();
+  });
+
+  it('reveals the owner switcher on toggle click and hides it again on cancel', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', sessionFetchMock());
+
+    render(<ChatWidget ownerId="owner-1" />);
+    await waitFor(() => expect(screen.getByText(/Chat with Ada|Ada · Engineer/i)).toBeTruthy());
+
+    await user.click(screen.getByRole('button', { name: /switch owner/i }));
+    expect(screen.getByRole('textbox', { name: /switch owner/i })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByRole('textbox', { name: /switch owner/i })).toBeNull();
+  });
+
+  it('shows owner id in preview mode, and lets any visitor switch owner profiles via the toggle', async () => {
     const user = userEvent.setup();
     vi.stubGlobal('fetch', sessionFetchMock());
     vi.stubEnv('VITE_DEMO_OWNER_ID', 'demo-owner');
 
-    render(<ChatWidget />);
+    render(<ChatWidget preview />);
     expect(await screen.findByText(/sample twin/i)).toBeTruthy();
+    expect(screen.getByText(/previewing as/i).textContent).toContain('demo-owner');
 
+    await user.click(screen.getByRole('button', { name: /switch owner/i }));
     await user.type(screen.getByRole('textbox', { name: /switch owner/i }), 'owner-42');
     await user.click(screen.getByRole('button', { name: /^switch$/i }));
 
@@ -85,6 +112,7 @@ describe('ChatWidget', () => {
       expect(screen.getByText(/previewing as/i).textContent).toContain('owner-42'),
     );
     expect(screen.queryByText(/sample twin/i)).toBeNull();
+    expect(screen.queryByRole('textbox', { name: /switch owner/i })).toBeNull();
   });
 
   it('creates a session and streams a reply', async () => {

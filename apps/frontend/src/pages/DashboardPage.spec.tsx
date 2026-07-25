@@ -45,6 +45,6 @@ describe('DashboardPage', () => {
     );
 
     const link = await screen.findByRole('link', { name: /public chat/i });
-    expect(link.getAttribute('href')).toBe('/chat?owner=owner-123');
+    expect(link.getAttribute('href')).toBe('/chat?owner=owner-123&preview=1');
   });
 });

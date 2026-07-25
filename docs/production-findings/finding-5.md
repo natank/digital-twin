@@ -108,15 +108,33 @@ Implemented all four suggestions in `ChatWidget.tsx`:
   re-deriving it from props on every render.
 - When `ownerSource === 'demo-fallback'`, a distinct, non-dismissible "Sample twin"
   banner renders above the conversation (`styles.sampleBanner`), visually separate
-  from the existing transient `notice`/`error` banners.
-- A muted "Previewing as `{owner_id}`" line always renders under the header, so a
-  regression in the dashboard's `?owner=` link (finding-4) would be visible
-  immediately instead of silently reproducing the original bug.
-- Added an in-widget "Switch owner" input + button. Submitting it resets the
-  session/conversation state and re-starts a session against the pasted owner id,
-  marking `ownerSource` as `'explicit'` and clearing the sample banner.
+  from the existing transient `notice`/`error` banners. Shown to every visitor
+  (real or previewing owner) regardless of mode, since it protects anyone from
+  unknowingly talking to the seed profile.
+- Added a `preview` prop (wired from a new `?preview=1` query param, set only by the
+  dashboard's "Public chat" link) that gates just the raw owner-id text. A bare
+  `Previewing as {uuid}` string reads as leaked debug output to a real visitor with
+  no context for what it means, so it's shown only in preview mode — meaningful for
+  an owner confirming their own twin loaded, hidden otherwise.
+- The owner switcher is collapsed by default behind a small "Switch owner" text
+  link next to the status line — a persistent label+input+button row competed
+  with the actual chat for attention and read as cluttered. Clicking it toggles
+  an inline input + "Switch" button (and the link becomes "Cancel"); the input
+  auto-focuses on open, and Escape collapses it again. Submitting it resets
+  session/conversation state, re-starts a session against the pasted owner id,
+  marks `ownerSource` as `'explicit'`, and collapses the switcher.
+- Added `forwardRef` to the shared `Input` component (`libs/frontend-shared`) so
+  it can be focused programmatically — needed to auto-focus the owner field when
+  the switcher opens.
+- Fixed a layout bug in the (then always-visible) owner-switcher row — label
+  butting against the input with no breathing room — by giving the `Input`
+  wrapper `min-width: 0` / full-width input and proper row spacing/gap; this
+  styling carries over to the now-collapsible version.
 
-Verified via component tests in `ChatWidget.spec.tsx` (banner shown/hidden correctly,
-"Previewing as" reflects the active owner, switching owner clears the sample banner
-and starts a new session) and `tsc` typecheck. No live browser/E2E verification was
-done in this pass (no browser automation tool available in the dev environment).
+Verified via component tests in `ChatWidget.spec.tsx` (sample banner shown to all
+visitors regardless of preview mode; raw owner id hidden for regular visitors and
+shown only with `preview`; switcher collapsed by default and toggled open/closed
+via the link; switching owner clears the sample banner, starts a new session, and
+re-collapses the switcher) plus `Input.spec.tsx` in `frontend-shared`, and `tsc`
+typecheck. No live browser/E2E verification was done in this pass (no browser
+automation tool available in the dev environment).
