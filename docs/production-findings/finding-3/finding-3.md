@@ -1,11 +1,15 @@
 ## finding description
+
 login fails
+
 ## applicable documents
 
 1. technical design: `docs/TECHNICAL_DESIGN.md`
 2. implementation master plan: `docs/IMPLEMENTATION_MASTER_PLAN.md`
 3. screen capture: `docs/production-findings/finding-3/finding-3.png`
+
 ## next tasks
+
 see screem capture - ref 3
 find root cause and fix on a bug branch
 

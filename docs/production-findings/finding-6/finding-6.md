@@ -29,7 +29,7 @@ unread count — there is no shared state or event between them:
 - `NotificationsPage` (`NotificationsPage.tsx:32-51`) keeps its own separate `unread`
   state, fetched via `listNotifications()`. When the user marks one notification read
   (`onMarkRead`, lines 57-68) or all read (`onMarkAll`, lines 70-81), the page calls
-  `load()` again afterward, which correctly updates *its own* `unread` state and list
+  `load()` again afterward, which correctly updates _its own_ `unread` state and list
   — but nothing tells `UnreadBadge` that anything changed.
 
 Result: after marking notifications read, `NotificationsPage`'s inline unread count

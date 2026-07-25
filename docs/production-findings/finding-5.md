@@ -39,6 +39,7 @@ setTitle(headline ? `${name} · ${headline}` : `Chat with ${name}`);
 ```
 
 There is **no distinction** in the rendered UI between:
+
 - an owner id explicitly supplied via `?owner=` / a real dashboard link, vs.
 - the `VITE_DEMO_OWNER_ID` fallback silently kicking in.
 
