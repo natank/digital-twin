@@ -1,5 +1,7 @@
 ## finding description
+
 the tween answers doesn't match the resume apploaded
+
 ## applicable documents
 
 1. technical design: `docs/TECHNICAL_DESIGN.md`
@@ -8,10 +10,12 @@ the tween answers doesn't match the resume apploaded
 4. resume: `docs/production-findings/finding-4/Nati Kamusher - Full Stack Dev.pdf`
 
 ## next tasks
+
 see screen capture (ref 3) with sample answer not matching the resume uploaded, (ref 4)
 find root cause and fix on a bug branch
 
 ## root cause
+
 The dashboard's "Public chat" link (`apps/frontend/src/pages/DashboardPage.tsx`) points to the
 bare `/chat` route with no `?owner=` query param. `ChatWidget` (`apps/frontend/src/components/chat/ChatWidget.tsx:24`)
 falls back to `getDemoOwnerId()` (i.e. `VITE_DEMO_OWNER_ID`) whenever no owner id is supplied, which
@@ -30,5 +34,6 @@ skills in a way that would drop "React". The bug is purely a missing `owner` id 
 chat-preview link, not a parsing/prompt bug.
 
 ### Fix
+
 Pass the logged-in owner's id to the chat preview link from the dashboard so "Public chat" actually
 previews the current owner's own twin instead of the seeded demo profile.

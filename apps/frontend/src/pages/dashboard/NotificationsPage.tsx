@@ -11,6 +11,7 @@ import {
   type NotificationWire,
 } from '../../lib/api/notifications';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { useNotificationsContext } from '../../lib/notifications/NotificationsContext';
 import styles from '../Page.module.css';
 import notifStyles from './NotificationsPage.module.css';
 
@@ -28,6 +29,7 @@ function formatWhen(iso: string | null | undefined): string {
 
 export function NotificationsPage(): JSX.Element {
   const { token } = useAuth();
+  const { refresh: refreshUnreadBadge } = useNotificationsContext();
   const [items, setItems] = useState<NotificationWire[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export function NotificationsPage(): JSX.Element {
     setBusyId(id);
     try {
       await markNotificationRead(token, id);
-      await load();
+      await Promise.all([load(), refreshUnreadBadge()]);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to mark read.');
     } finally {
@@ -72,7 +74,7 @@ export function NotificationsPage(): JSX.Element {
     setBusyId('all');
     try {
       await markAllNotificationsRead(token);
-      await load();
+      await Promise.all([load(), refreshUnreadBadge()]);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to mark all read.');
     } finally {
@@ -85,7 +87,7 @@ export function NotificationsPage(): JSX.Element {
     setBusyId(id);
     try {
       await deleteNotification(token, id);
-      await load();
+      await Promise.all([load(), refreshUnreadBadge()]);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to delete.');
     } finally {
