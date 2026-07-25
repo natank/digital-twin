@@ -59,11 +59,24 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     });
   }
 
-  const response = await fetch(url, {
-    ...rest,
-    headers: mergedHeaders,
-    body,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...rest,
+      headers: mergedHeaders,
+      body,
+    });
+  } catch (cause) {
+    // fetch() rejects with a TypeError when the request never reaches the
+    // server (backend down, CORS/preflight failure, DNS, offline). Surface
+    // this as a typed, unambiguous error so callers don't confuse an
+    // unreachable API with a legitimate rejection (e.g. bad credentials).
+    throw new ApiClientError(
+      'NETWORK_ERROR',
+      `Cannot reach the server at ${getApiBaseUrl()}. Please check your connection and try again.`,
+      { url, cause: cause instanceof Error ? cause.message : String(cause) },
+    );
+  }
 
   let envelope: ApiEnvelope<T>;
   try {
