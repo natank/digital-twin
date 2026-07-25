@@ -60,8 +60,8 @@ python3 scripts/validate-env.py
 # In separate terminals — application servers (hot reload)
 pnpm nx serve apps/backend     # http://localhost:8000  (docs: /docs)
 pnpm nx serve apps/frontend    # http://localhost:4200
-# Optional: Celery worker for CV processing
-pnpm nx run apps/backend:worker
+# Required for CV processing — without it, jobs stay "pending" forever
+pnpm nx run apps/backend:worker   # or: pnpm worker
 ```
 
 `.env.local` is git-ignored. `.env.example` is the committed template.

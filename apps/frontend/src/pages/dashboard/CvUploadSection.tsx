@@ -14,6 +14,13 @@ import styles from '../Page.module.css';
 
 const TERMINAL = new Set(['completed', 'failed', 'succeeded', 'done', 'error']);
 
+// Poll every 1.5s; give up after ~2 minutes so a stalled or unattended job
+// (e.g. no Celery worker consuming the queue) fails loud instead of polling
+// the status endpoint forever.
+const POLL_INTERVAL_MS = 1500;
+const POLL_TIMEOUT_MS = 120_000;
+const MAX_POLL_ATTEMPTS = Math.ceil(POLL_TIMEOUT_MS / POLL_INTERVAL_MS);
+
 function isTerminal(status: string): boolean {
   const s = status.toLowerCase();
   return TERMINAL.has(s) || s.includes('complete') || s.includes('fail') || s.includes('error');
@@ -51,9 +58,11 @@ export function CvUploadSection({
   const pollJob = useCallback(
     (jobId: string): void => {
       stopPolling();
+      let attempts = 0;
       pollRef.current = setInterval(() => {
         void (async () => {
           try {
+            attempts += 1;
             const next = await getMyCvJob(token, jobId);
             setJob(next);
             if (isTerminal(next.status)) {
@@ -66,6 +75,15 @@ export function CvUploadSection({
                 const refreshed = await getMyProfile(token);
                 onProfileRefresh(refreshed);
               }
+              return;
+            }
+            if (attempts >= MAX_POLL_ATTEMPTS) {
+              stopPolling();
+              setProcessing(false);
+              setError(
+                'Processing is taking longer than expected and may be stuck. ' +
+                  'Please try again later or contact support if this persists.',
+              );
             }
           } catch (err) {
             stopPolling();
@@ -73,7 +91,7 @@ export function CvUploadSection({
             setError(err instanceof ApiClientError ? err.message : 'Failed to poll job status.');
           }
         })();
-      }, 1500);
+      }, POLL_INTERVAL_MS);
     },
     [token, onProfileRefresh, stopPolling],
   );
