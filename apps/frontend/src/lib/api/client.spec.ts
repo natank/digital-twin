@@ -75,6 +75,20 @@ describe('apiFetch', () => {
     );
   });
 
+  it('throws NETWORK_ERROR when the request never reaches the server', async () => {
+    // Reproduces finding-3: backend down -> fetch rejects with a TypeError
+    // ("Failed to fetch" / ERR_CONNECTION_REFUSED). Must surface as a typed
+    // ApiClientError so the UI can distinguish it from bad credentials.
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+
+    const promise = apiFetch('/auth/login', { method: 'POST' });
+    await expect(promise).rejects.toBeInstanceOf(ApiClientError);
+    await expect(promise).rejects.toMatchObject({
+      code: 'NETWORK_ERROR',
+      message: expect.stringContaining('Cannot reach the server'),
+    });
+  });
+
   it('throws on invalid JSON', async () => {
     vi.stubGlobal(
       'fetch',
