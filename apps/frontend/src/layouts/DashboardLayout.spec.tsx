@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthProvider } from '../lib/auth/AuthContext';
 import { clearAccessToken, setAccessToken } from '../lib/auth/storage';
+import { NotificationsProvider } from '../lib/notifications/NotificationsContext';
 import { DashboardLayout } from './DashboardLayout';
 
 describe('DashboardLayout', () => {
@@ -41,11 +42,13 @@ describe('DashboardLayout', () => {
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
         <AuthProvider>
-          <Routes>
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<h1>Overview</h1>} />
-            </Route>
-          </Routes>
+          <NotificationsProvider>
+            <Routes>
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<h1>Overview</h1>} />
+              </Route>
+            </Routes>
+          </NotificationsProvider>
         </AuthProvider>
       </MemoryRouter>,
     );
